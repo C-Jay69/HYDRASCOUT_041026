@@ -1,13 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CampaignCard } from '@/components/campaigns/CampaignCard';
 import { useCampaigns } from '@/hooks/useCampaigns';
-import { Plus, Mail, FileText, Stamp, Inbox } from 'lucide-react';
+import { Plus, Mail, FileText, Stamp, Inbox, Rocket } from 'lucide-react';
 import { CampaignStatus } from '@/lib/campaign-data';
+
+interface AutoCampaign {
+  id: string;
+  runId: string | null;
+  name: string;
+  channels: string[];
+  status: string;
+  leadIds: string[];
+  stats: { sent: number; delivered: number; failed: number; replies: number; interested: number; appointments: number; cost: number };
+  createdAt: string;
+}
+
 
 type TabValue = 'all' | 'active' | 'scheduled' | 'completed';
 
@@ -28,6 +41,14 @@ const statusMap: Record<TabValue, CampaignStatus | null> = {
 export default function CampaignsPage() {
   const { campaigns, deleteCampaign, duplicateCampaign } = useCampaigns();
   const [activeTab, setActiveTab] = useState<TabValue>('all');
+  const [autoCampaigns, setAutoCampaigns] = useState<AutoCampaign[]>([]);
+
+  useEffect(() => {
+    fetch('/api/campaigns', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => setAutoCampaigns(d.campaigns || []))
+      .catch(() => setAutoCampaigns([]));
+  }, []);
 
   const filteredCampaigns = statusMap[activeTab] === null
     ? campaigns
@@ -67,6 +88,37 @@ export default function CampaignsPage() {
           </Link>
         </Button>
       </div>
+
+      {/* Automation campaigns (created by the Launch pipeline) */}
+      {autoCampaigns.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <Rocket className="h-5 w-5 text-primary" /> Automation Campaigns
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {autoCampaigns.map((c) => (
+              <div key={c.id} className="rounded-lg border bg-card p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-semibold text-sm leading-tight">{c.name}</p>
+                  <Badge variant={c.status === 'completed' ? 'secondary' : 'outline'} className="text-[10px] shrink-0">{c.status}</Badge>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {c.channels.map((ch) => <Badge key={ch} variant="outline" className="text-[10px]">{ch.replace('_', ' ')}</Badge>)}
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                  <div><p className="text-lg font-bold tabular-nums">{c.stats.sent}</p><p className="text-muted-foreground">Sent</p></div>
+                  <div><p className="text-lg font-bold tabular-nums">{c.stats.replies}</p><p className="text-muted-foreground">Replies</p></div>
+                  <div><p className="text-lg font-bold tabular-nums">${c.stats.cost.toFixed(2)}</p><p className="text-muted-foreground">Cost</p></div>
+                </div>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{c.leadIds.length} leads · {new Date(c.createdAt).toLocaleDateString()}</span>
+                  {c.runId && <Link className="text-primary hover:underline" href={`/automation/runs/${c.runId}`}>View run</Link>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>

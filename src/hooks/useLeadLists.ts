@@ -7,12 +7,14 @@ import {
   createLeadList,
   deleteLeadList,
   getPropertiesForList,
-  addPropertiesToList,
-  removePropertyFromList,
-  updatePropertyStatusInList,
-  bulkUpdatePropertyStatus
+  addPropertiesToList as apiAddPropertiesToList,
+  removePropertyFromList as apiRemovePropertyFromList,
+  updatePropertyStatusInList as apiUpdatePropertyStatusInList,
+  bulkUpdatePropertyStatus as apiBulkUpdatePropertyStatus
 } from '@/lib/supabase-leads';
 import { Property } from '@/types';
+
+export type { Property };
 
 // Types
 export type PropertyStatus = 'new' | 'contacted' | 'interested' | 'skip' | 'converted';
@@ -64,7 +66,7 @@ export function useLeadLists() {
 
         // If properties are provided, add them immediately
         if (properties.length > 0) {
-          await addPropertiesToList(newList.id, properties.map(p => p.id));
+          await apiAddPropertiesToList(newList.id, properties.map(p => p.id));
         }
 
         const mappedNewList = {
@@ -155,12 +157,12 @@ export function useLeadLists() {
     async (listId: string, propertiesToAdd: Property[]) => {
       setIsLoading(true);
       try {
-        await addPropertiesToList(listId, propertiesToAdd.map(p => p.id));
+        await apiAddPropertiesToList(listId, propertiesToAdd.map(p => p.id));
 
         // Refresh current list if it's the one being updated
         if (currentList?.id === listId) {
           const updatedProps = await getPropertiesForList(listId);
-          setCurrentList(prev => prev ? { ...prev, properties: updatedProps } : null);
+          setCurrentList(prev => prev ? { ...prev, properties: updatedProps as Property[] } : null);
         }
       } catch (error) {
         console.error('Error adding properties to list:', error);
@@ -175,11 +177,11 @@ export function useLeadLists() {
     async (listId: string, propertyId: string) => {
       setIsLoading(true);
       try {
-        await removePropertyFromList(listId, propertyId);
+        await apiRemovePropertyFromList(listId, propertyId);
 
         if (currentList?.id === listId) {
           const updatedProps = await getPropertiesForList(listId);
-          setCurrentList(prev => prev ? { ...prev, properties: updatedProps } : null);
+          setCurrentList(prev => prev ? { ...prev, properties: updatedProps as Property[] } : null);
         }
         setSelectedProperties((prev) => {
           const next = new Set(prev);
@@ -199,11 +201,11 @@ export function useLeadLists() {
     async (listId: string, propertyId: string, status: PropertyStatus) => {
       setIsLoading(true);
       try {
-        await updatePropertyStatusInList(listId, propertyId, status);
+        await apiUpdatePropertyStatusInList(listId, propertyId, status);
 
         if (currentList?.id === listId) {
           const updatedProps = await getPropertiesForList(listId);
-          setCurrentList(prev => prev ? { ...prev, properties: updatedProps } : null);
+          setCurrentList(prev => prev ? { ...prev, properties: updatedProps as Property[] } : null);
         }
       } catch (error) {
         console.error('Error updating property status:', error);
@@ -218,11 +220,11 @@ export function useLeadLists() {
     async (listId: string, propertyIds: string[], status: PropertyStatus) => {
       setIsLoading(true);
       try {
-        await bulkUpdatePropertyStatus(listId, propertyIds, status);
+        await apiBulkUpdatePropertyStatus(listId, propertyIds, status);
 
         if (currentList?.id === listId) {
           const updatedProps = await getPropertiesForList(listId);
-          setCurrentList(prev => prev ? { ...prev, properties: updatedProps } : null);
+          setCurrentList(prev => prev ? { ...prev, properties: updatedProps as Property[] } : null);
         }
         setSelectedProperties(new Set());
       } catch (error) {
