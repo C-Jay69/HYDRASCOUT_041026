@@ -13,6 +13,8 @@ import {
   CreditCard,
   ChevronLeft,
   ChevronRight,
+  Rocket,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,11 +34,13 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { title: "Launch Automation", href: "/automation/launch", icon: Rocket },
+  { title: "Lead CRM", href: "/leads", icon: Users },
   { title: "Property Search", href: "/search", icon: Map },
   { title: "Lead Lists", href: "/lists", icon: List },
   { title: "Campaigns", href: "/campaigns", icon: Mail },
   { title: "Analytics", href: "/analytics", icon: BarChart3 },
-  { title: "Saved Searches", href: "/saved-searches", icon: Bookmark },
+  { title: "Saved Searches", href: "/alerts", icon: Bookmark },
   { title: "Billing", href: "/billing", icon: CreditCard },
 ];
 

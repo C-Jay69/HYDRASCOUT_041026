@@ -1,108 +1,194 @@
-# 🏠 HYDRAWIRE - Real Estate Investment Platform
+# 🏠 HYDRAWIRE — Automated Distressed Property Lead Generation & Outreach System
 
-HYDRAWIRE is a high-performance real estate data and investment platform designed for distressed property acquisition. It allows investors to search millions of properties, analyze equity, build targeted lead lists, and execute automated marketing campaigns.
+HYDRAWIRE turns the entire distressed-property workflow into **one button**. Press **Launch** and the platform automatically:
+
+1. **Collects** property records from 21 registered government/public data-source connectors (tax assessor, recorder, sheriff sales, probate, bankruptcy, code enforcement, NOD/NTS, lis pendens, HUD, and more)
+2. **Classifies** every property across 17 distress categories (foreclosure, tax lien, probate, vacant, absentee, high equity, …)
+3. **Cleans & de-duplicates** the data (normalized addresses/names/ZIPs, APN-based merging, cross-run duplicate-import prevention)
+4. **Enriches** owner contact info via a pluggable skip-trace provider (confidence scoring, low-confidence rejection, full audit log)
+5. **Scores** every lead 0–100 for seller motivation
+6. **Builds campaign lists** filtered by minimum score
+7. **Sends outreach** through your selected channels — Email (SendGrid), SMS (Twilio), ringless voicemail, direct mail, or manual call tasks — with AI-personalized messages
+8. **Logs every action**, tracks delivery status, and **schedules follow-ups** timed to each lead's urgency
+
+Works **out of the box with zero configuration** (demo mode: in-memory data + simulated outreach) and upgrades to persistent, live infrastructure as you add API keys.
+
+---
 
 ## 🚀 Tech Stack
 
-- **Framework:** Next.js 15 (App Router)
-- **Database & Auth:** Supabase (PostgreSQL)
-- **Styling:** Tailwind CSS 4 + shadcn/ui
-- **Maps:** Google Maps Platform
-- **Language:** TypeScript
-- **Runtime:** Node.js 18+ / Bun
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router) + React 19 + TypeScript |
+| Database | Supabase (PostgreSQL) — optional; in-memory demo store without it |
+| Styling | Tailwind CSS 4 + shadcn/ui |
+| Outreach | SendGrid (email), Twilio (SMS), provider stubs for RVM/direct mail |
+| AI | OpenAI or Anthropic (optional; heuristic fallbacks built in) |
+| External workflows | n8n / Make.com webhook hook for real county scrapers |
 
 ---
 
-## 🛠 Installation & Setup
+## 🛠 Deployment Instructions
 
-### 1. Prerequisites
-- Install [Node.js](https://nodejs.org/) (v18 or higher)
-- Install [pnpm](https://pnpm.io/) or [Bun](https://bun.sh/) (recommended)
-- A [Supabase](https://supabase.com/) account and project
+### Option A — Local / self-hosted (fastest)
 
-### 2. Clone & Install
 ```bash
-git clone <repository-url>
-cd HYDRAWIRE-main
-pnpm install
+# 1. Clone & install (Node.js 18+; use --legacy-peer-deps for npm)
+git clone https://github.com/C-Jay69/HYDRAWIRE_050726.git
+cd HYDRAWIRE_050726
+npm install --legacy-peer-deps     # or: pnpm install / bun install
+
+# 2. (Optional) configure environment
+cp .env.example .env.local         # fill in whatever keys you have — all optional
+
+# 3. Run
+npm run dev                        # development → http://localhost:3050
+# — or production —
+npm run build
+PORT=3050 npx next start -p 3050
 ```
 
-### 3. Environment Configuration
-Create a `.env.local` file in the root directory and add your credentials:
+> **No `.env.local` at all?** The app runs in full **demo mode**: an in-memory
+> database, deterministic simulated county data, and simulated outreach.
+> Perfect for evaluating the entire workflow safely. Demo data resets when
+> the server restarts.
 
-```env
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+### Option B — Vercel + Supabase (production)
 
-# Google Maps Configuration
-GOOGLE_MAPS_API=your_google_maps_api_key
-```
+1. **Create a Supabase project** at [supabase.com](https://supabase.com) (free tier works).
+2. In the Supabase **SQL Editor**, paste and run the entire contents of [`database/schema.sql`](database/schema.sql). This creates all 15 tables (properties, leads, automation_runs, communications, follow_ups, enrichment_audits, outreach_campaigns, …).
+3. **Import the repo into Vercel** (or any Node host) and set the environment variables below.
+4. Deploy. The `Launch` pipeline runs inside the API route using Next.js `after()`, so it completes even after the HTTP response returns.
 
-### 4. Database Initialization
-1. Log in to your **Supabase Dashboard**.
-2. Open the **SQL Editor**.
-3. Copy the contents of `/database/schema.sql` from this project.
-4. Paste and **Run** the script to create all necessary tables and extensions.
+### Environment variables
 
-### 5. Seed Demo Data
-To populate your database with realistic test properties, run the seed script:
+All variables are **optional** — each unlocks a capability:
+
+| Variable | Purpose |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL (persistent database) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/publishable key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role key (server-side pipeline writes) |
+| `SENDGRID_API_KEY` + `SENDGRID_FROM_EMAIL` | Real email sending (otherwise simulated) |
+| `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` + `TWILIO_FROM_NUMBER` | Real SMS sending (otherwise simulated) |
+| `OPENAI_API_KEY` (or `ANTHROPIC_API_KEY`) | LLM-written lead summaries & outreach copy (otherwise heuristic templates) |
+| `N8N_WEBHOOK_URL` | Calls your n8n/Make.com workflow during the Collect stage and ingests any `{ records: [...] }` it returns — this is how you plug in **real county scrapers** |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Map view on the Search page |
+| `HYDRAWIRE_FORCE_DEMO=true` | Force in-memory demo mode even with Supabase configured |
+
+### Seed demo properties into Supabase (optional)
+
 ```bash
-bun run scripts/seed.ts
-```
-
-### 6. Run the Application
-```bash
-npm run dev
-# The app will start on http://localhost:3050
+npx tsx scripts/seed.ts        # requires NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in .env.local
 ```
 
 ---
 
-## 📖 How To Use HYDRAWIRE
+## 📖 User Guide
 
-### 🔍 Finding Leads (Search & Map)
-- **Map View:** Navigate to the **Search** page. Use the sidebar filters to narrow down properties.
-- **Marker Colors:**
-  - 🟢 **Green:** High Equity (50%+) & Free & Clear.
-  - 🔴 **Red:** Foreclosure, Pre-Foreclosure, Auction, or REO.
-  - 🟡 **Amber:** Vacant or Absentee Owner.
-  - 🔵 **Blue:** Standard/Off-Market properties.
-- **Saved Searches:** Once you've set your ideal filters, save the search to get alerts and quickly return to these criteria later.
+### 1. The one-button workflow (start here)
 
-### 📋 Managing Lead Lists
-- **Create Lists:** Organize your leads into lists (e.g., "High Equity Florida" or "Hot Probates").
-- **Adding Properties:** From the map or property detail page, add a property to a specific list.
-- **Tracking Progress:** In the **Lists** view, update a lead's status:
-  - `New` $\rightarrow$ `Contacted` $\rightarrow$ `Interested` $\rightarrow$ `Converted`.
-- **Exporting:** Export your curated lists to CSV for external marketing tools.
+Open **Launch Automation** in the sidebar (`/automation/launch`) and follow the wizard:
 
-### 🏠 Analyzing Properties
-- Click any property on the map to open the **Property Detail** view.
-- View critical metrics: Estimated Value, Loan Balance, and Equity Percentage.
-- Check the property's history and comparable sales (Comps).
+1. **Select Counties** — choose a state, then tick the counties to target.
+2. **Select Lead Types** — pick the distress indicators you want (foreclosure, pre-foreclosure, tax lien, probate, vacant, absentee, high equity, …).
+3. **Select Outreach Channels** — email, SMS, ringless voicemail, direct mail, and/or manual call tasks. You can paste a custom SMS template with variables like `{{owner_first_name}}`, `{{property_address}}`, `{{estimated_equity}}`.
+4. **Review** — set an optional campaign name and the **minimum motivation score** for outreach (leads below it are still stored in the CRM, just not contacted), then press **START AUTOMATION**.
+
+You're redirected to a **live run monitor** showing each pipeline stage, a streaming log console, and final stats (records collected, duplicates merged, owners enriched/rejected, messages sent, follow-ups scheduled, cost).
+
+### 2. Working leads in the CRM (`/leads`)
+
+- Leads arrive **sorted by motivation score** (highest priority first).
+- **Filter** by search text, county, category, status, and minimum score; **export to CSV** anytime.
+- Click any row to open the **lead drawer**: AI summary, equity, auction date, enriched phones/emails with per-item confidence, source list, full **communication history** (with delivery status and `simulated` flags), scheduled **follow-ups**, and editable **notes**.
+- Update the **status** inline as you work leads: `new → contacted → replied → interested → appointment → converted` (or `dead`).
+
+### 3. Dashboard (`/dashboard`)
+
+Live funnel metrics: new leads today, total distressed properties, per-category counts (foreclosures, tax liens, probates, vacant), outreach sent, replies, interested sellers, appointments, conversion rate, cost per lead, and your recent automation runs.
+
+### 4. Campaigns (`/campaigns`)
+
+Every Launch creates an **automation campaign** with sent/replies/cost stats and a link back to its run. You can still build manual mail/email campaigns with the campaign builder.
+
+### 5. Property search & lists (`/search`, `/lists`)
+
+Browse the property database (Supabase data, or built-in demo data), open property detail pages, organize leads into lists, and export.
+
+### 6. Plugging in real data sources
+
+Demo connectors synthesize realistic county records so you can exercise the full pipeline. To go live:
+
+- **Easiest:** point `N8N_WEBHOOK_URL` at an n8n/Make.com workflow that scrapes your counties (Playwright, HTTP, OCR, etc.) and responds with `{ "records": [ ... ] }` matching the `RawRecord` shape in [`src/lib/automation/types.ts`](src/lib/automation/types.ts).
+- **Direct:** implement `collect()` on any connector in [`src/lib/automation/sources.ts`](src/lib/automation/sources.ts) — the registry pattern makes adding new counties/sources a one-file change.
+- **Skip tracing:** implement `EnrichmentProvider` in [`src/lib/automation/enrich.ts`](src/lib/automation/enrich.ts) for your provider (BatchData, IDI, TLOxp, …). Confidence thresholds and audit logging are already handled.
+
+### ⚖️ Compliance notes
+
+- **SMS & ringless voicemail** require prior express consent or another lawful basis in most jurisdictions (TCPA in the US). Without Twilio credentials, HYDRAWIRE simulates SMS — nothing is delivered. Built-in templates include opt-out language; keep it.
+- Respect **DNC lists**, provider terms of service, and state-specific rules for contacting distressed homeowners (some states restrict solicitation of owners in foreclosure).
+- Enrichment must use **legally obtained data**. Every enrichment attempt is audit-logged (`enrichment_audits`) with provider, confidence, and rejection reasons.
 
 ---
 
-## 🎯 The Ultimate Goal: Automated Outreach
-HYDRAWIRE is designed to move from manual searching to a single-click automated workflow:
+## 🔌 API Reference
 
-**The "Launch" Sequence:**
-`Launch` $\rightarrow$ `Select Counties` $\rightarrow$ `Select Lead Types` $\rightarrow$ `Select Outreach Channels` $\rightarrow$ `Review` $\rightarrow$ `Start Automation`
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/api/automation/launch` | POST | Validate config & start a pipeline run (returns `runId`) |
+| `/api/automation/runs` | GET | List runs |
+| `/api/automation/runs/[id]` | GET | Run status, stage progress, logs, stats |
+| `/api/automation/sources` | GET | Registered data-source connectors |
+| `/api/leads` | GET | Searchable CRM with filters (`search`, `state`, `county`, `city`, `zip`, `category`, `status`, `ownerType`, `minScore`, `limit`) |
+| `/api/leads/[id]` | GET / PATCH | Lead detail (+ communications & follow-ups) / update status, notes, tags, follow-up |
+| `/api/campaigns` | GET | Automation campaigns with stats |
+| `/api/dashboard/stats` | GET | Dashboard metrics |
+| `/api/health` | GET | Health check |
 
-This workflow automatically handles:
-1. **Data Collection** from public gov sources.
-2. **Classification** of distressed indicators.
-3. **Contact Enrichment** (Skip Tracing).
-4. **Motivation Scoring** (0-100).
-5. **Automated Outreach** via Email, SMS, and Direct Mail.
+Launch payload example:
+
+```json
+{
+  "state": "Texas",
+  "counties": ["Harris", "Dallas"],
+  "leadTypes": ["foreclosure", "tax_lien", "probate", "vacant"],
+  "channels": ["email", "sms", "direct_mail"],
+  "minScore": 40,
+  "campaignName": "TX Q3 Distressed Blast",
+  "templates": { "sms": "Hi {{owner_first_name}} — quick question about {{property_address}}…" }
+}
+```
 
 ---
 
 ## 📂 Project Structure
-- `src/app/`: Next.js routes and layouts.
-- `src/components/`: UI components (including `ui/` for shadcn).
-- `src/lib/`: Database helpers and business logic.
-- `src/hooks/`: Custom React hooks for state management.
-- `database/`: SQL schema and migration scripts.
+
+```
+src/
+├── app/
+│   ├── (dashboard)/
+│   │   ├── automation/launch/        # Launch wizard (Counties → Lead Types → Channels → Review)
+│   │   ├── automation/runs/[id]/     # Live run monitor (stages, logs, stats)
+│   │   ├── leads/                    # CRM (search, filters, statuses, notes, history, CSV export)
+│   │   ├── dashboard/                # Live metrics dashboard
+│   │   └── ...                       # search, lists, campaigns, analytics, billing
+│   └── api/
+│       ├── automation/               # launch, runs, sources
+│       ├── leads/                    # CRM API
+│       ├── campaigns/  dashboard/    # campaigns & stats APIs
+├── lib/automation/                   # ← THE PIPELINE
+│   ├── types.ts                      # Lead, run, campaign & category models
+│   ├── sources.ts                    # 21 data-source connectors + n8n webhook ingestion
+│   ├── clean.ts                      # Classification, normalization, de-duplication
+│   ├── enrich.ts                     # Skip tracing (pluggable providers + audit log)
+│   ├── score.ts                      # 0-100 motivation scoring
+│   ├── ai.ts                         # Summaries, channel recommendation, message drafting (LLM or heuristic)
+│   ├── templates.ts                  # Default outreach templates with variables
+│   ├── outreach.ts                   # SendGrid / Twilio / simulated channel adapters
+│   ├── store.ts                      # Supabase or in-memory persistence
+│   └── pipeline.ts                   # Orchestrator (retries, logging, progress)
+└── database/schema.sql               # Full PostgreSQL schema (15 tables)
+```
+
+See [`AUDIT.md`](AUDIT.md) for the repository audit that preceded this build and the requirement-by-requirement compliance matrix.

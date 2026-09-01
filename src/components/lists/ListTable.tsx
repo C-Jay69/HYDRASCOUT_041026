@@ -343,7 +343,7 @@ export function ListTable({
                 </td>
                 <td className="px-3 py-3">
                   <div className="flex flex-wrap gap-1">
-                    {property.tags.slice(0, 2).map((tag) => (
+                    {property.tags.slice(0, 2).map((tag: string) => (
                       <Badge key={tag} variant="outline" className="text-xs px-1.5 py-0">
                         {tag}
                       </Badge>

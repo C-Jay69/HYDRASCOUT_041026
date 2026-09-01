@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -7,19 +6,9 @@ import GlobalClientEffects from "@/components/GlobalClientEffects";
 
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "PropStream - Real Estate Investment Platform",
-  description: "Find investment properties, analyze deals, and build your real estate business with PropStream.",
+  title: "HYDRAWIRE - Distressed Property Lead Generation & Outreach",
+  description: "Automated distressed property lead generation, enrichment, scoring and outreach platform.",
 };
 
 export default function RootLayout({
@@ -37,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased `}
+        className={`antialiased`}
       >
         <Toaster />
         <Sonner />

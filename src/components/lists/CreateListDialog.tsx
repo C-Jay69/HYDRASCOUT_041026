@@ -41,11 +41,13 @@ export function CreateListDialog({
 
     setIsSubmitting(true);
     try {
-      const newList = createList(name.trim(), description.trim(), propertiesToAdd);
+      const newList = await createList(name.trim(), description.trim(), propertiesToAdd);
       onOpenChange(false);
       setName('');
       setDescription('');
-      router.push(`/lists/${newList.id}`);
+      if (newList?.id) {
+        router.push(`/lists/${newList.id}`);
+      }
     } finally {
       setIsSubmitting(false);
     }

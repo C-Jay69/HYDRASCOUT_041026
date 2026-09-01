@@ -3,11 +3,11 @@ import { notFound } from 'next/navigation';
 import PropertyDetailView from '@/components/PropertyDetailView';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function PropertyPage({ params }: Props) {
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const property = await getPropertyById(id);

@@ -174,3 +174,93 @@ CREATE TRIGGER update_lead_lists_modtime BEFORE UPDATE ON lead_lists FOR EACH RO
 CREATE TRIGGER update_campaigns_modtime BEFORE UPDATE ON campaigns FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 CREATE TRIGGER update_saved_searches_modtime BEFORE UPDATE ON saved_searches FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 CREATE TRIGGER update_subscriptions_modtime BEFORE UPDATE ON subscriptions FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+
+-- ============================================================
+-- AUTOMATION PIPELINE TABLES (Automated Distressed Property
+-- Lead Generation & Outreach System)
+-- ============================================================
+
+-- 10. LEADS (Step 6 CRM — populated by automation runs)
+-- The full lead object lives in `data` (JSONB); key fields are
+-- mirrored as columns for indexing/filtering.
+CREATE TABLE IF NOT EXISTS leads (
+    id TEXT PRIMARY KEY,
+    dedupe_key TEXT UNIQUE NOT NULL,      -- APN or normalized address+ZIP (prevents duplicate imports)
+    run_id TEXT,
+    state TEXT,
+    county TEXT,
+    city TEXT,
+    zip VARCHAR(10),
+    status TEXT DEFAULT 'new',            -- new, contacted, replied, interested, appointment, converted, dead
+    categories TEXT[] DEFAULT '{}',       -- Step 2 distress categories
+    motivation_score INTEGER DEFAULT 0,   -- Step 5 (0-100)
+    data JSONB NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_leads_score ON leads(motivation_score DESC);
+CREATE INDEX IF NOT EXISTS idx_leads_state_county ON leads(state, county);
+CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
+CREATE INDEX IF NOT EXISTS idx_leads_categories ON leads USING gin (categories);
+
+-- 11. AUTOMATION RUNS (Step 8 — one row per Launch)
+CREATE TABLE IF NOT EXISTS automation_runs (
+    id TEXT PRIMARY KEY,
+    status TEXT DEFAULT 'queued',         -- queued, running, completed, failed
+    data JSONB NOT NULL,                  -- config, stage progress, logs, stats
+    started_at TIMESTAMPTZ DEFAULT now(),
+    finished_at TIMESTAMPTZ
+);
+
+-- 12. COMMUNICATIONS (Step 8.8/8.9 — every outreach action + delivery status)
+CREATE TABLE IF NOT EXISTS communications (
+    id TEXT PRIMARY KEY,
+    lead_id TEXT REFERENCES leads(id) ON DELETE CASCADE,
+    run_id TEXT,
+    campaign_id TEXT,
+    channel TEXT NOT NULL,                -- email, sms, voicemail, direct_mail, call_task
+    provider TEXT,
+    simulated BOOLEAN DEFAULT TRUE,
+    status TEXT,                          -- queued, sent, delivered, failed, replied, task_created
+    subject TEXT,
+    message TEXT,
+    cost DECIMAL(8, 4) DEFAULT 0,
+    sent_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_comms_lead ON communications(lead_id);
+
+-- 13. FOLLOW UPS (Step 8.10)
+CREATE TABLE IF NOT EXISTS follow_ups (
+    id TEXT PRIMARY KEY,
+    lead_id TEXT REFERENCES leads(id) ON DELETE CASCADE,
+    run_id TEXT,
+    due_at TIMESTAMPTZ NOT NULL,
+    reason TEXT,
+    channel TEXT DEFAULT 'call_task',
+    done BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_followups_due ON follow_ups(due_at) WHERE NOT done;
+
+-- 14. ENRICHMENT AUDITS (Step 4 — audit log of every skip-trace attempt)
+CREATE TABLE IF NOT EXISTS enrichment_audits (
+    id TEXT PRIMARY KEY,
+    lead_id TEXT,
+    run_id TEXT,
+    provider TEXT,
+    matched BOOLEAN,
+    confidence DECIMAL(5, 2),
+    rejected_reason TEXT,
+    fields_enriched TEXT[],
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_audits_run ON enrichment_audits(run_id);
+
+-- 15. OUTREACH CAMPAIGNS (Step 7 — campaign lists built by the pipeline)
+CREATE TABLE IF NOT EXISTS outreach_campaigns (
+    id TEXT PRIMARY KEY,
+    data JSONB NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TRIGGER update_leads_modtime BEFORE UPDATE ON leads FOR EACH ROW EXECUTE PROCEDURE update_modified_column();

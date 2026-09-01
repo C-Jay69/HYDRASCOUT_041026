@@ -6,8 +6,7 @@ import {
   Map,
   Marker,
   InfoWindow,
-  useMap,
-  MapBounds
+  useMap
 } from '@vis.gl/react-google-maps';
 import { Property } from '@/types';
 import { PropertyPopup } from './PropertyPopup';
@@ -38,7 +37,7 @@ function BoundsHandler({ properties }: { properties: Property[] }) {
   const map = useMap();
 
   useEffect(() => {
-    if (properties.length === 0) return;
+    if (!map || properties.length === 0) return;
 
     const bounds = new google.maps.LatLngBounds();
     properties.forEach(p => bounds.extend({ lat: p.latitude, lng: p.longitude }));
