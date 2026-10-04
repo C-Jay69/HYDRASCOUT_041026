@@ -1,4 +1,4 @@
--- HYDRAWIRE Database Schema
+-- HYDRASCOUT Database Schema
 -- Target: Supabase (PostgreSQL)
 
 -- Enable required extensions for geospatial queries

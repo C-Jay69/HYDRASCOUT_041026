@@ -1,5 +1,5 @@
 /**
- * HYDRAWIRE Automation Pipeline — shared types.
+ * HYDRASCOUT Automation Pipeline — shared types.
  * Implements the data model required by the build prompt:
  * "AI Prompt: Design an Automated Distressed Property Lead Generation & Outreach System"
  */

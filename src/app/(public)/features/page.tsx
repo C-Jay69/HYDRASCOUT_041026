@@ -1,92 +1,97 @@
 import { Button } from '@/components/ui/button';
-import { FeatureCard } from '@/components/public/FeatureCard';
-import { Check, Search, User, Calculator, Mail, BarChart3, Phone } from 'lucide-react';
+import { Check, Search, Layers, UserSearch, Target, Send, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 
 const featureSections = [
   {
-    id: 'property-search',
-    title: 'Property Search',
+    id: 'data-collection',
+    title: 'Automated Data Collection',
     description:
-      'Search over 160 million properties with our intuitive map-based interface. Use advanced filters to find exactly what you are looking for.',
+      'Hydrascout pulls fresh records from 21 government and public source types — county tax assessors, recorders, sheriff sales, foreclosure auctions, probate courts, bankruptcy filings, code enforcement, tax lien/deed rolls, NOD/NTS/lis pendens notices, and more.',
     bullets: [
-      'Interactive map with satellite view',
-      'Filter by price, size, property type',
-      'Search by owner name or address',
-      'Save searches and get alerts',
+      'County Tax Assessor, Recorder & Tax Collector feeds',
+      'Sheriff sale & foreclosure auction calendars',
+      'Probate, bankruptcy & code enforcement records',
+      'Extensible connector registry — add new counties over time',
     ],
     icon: Search,
-    imageAlt: 'Property search interface',
+    imageAlt: 'Data collection sources',
+    cta: { label: 'Open the Launch Wizard', href: '/automation/launch' },
   },
   {
-    id: 'owner-information',
-    title: 'Owner Information',
+    id: 'classification-cleaning',
+    title: 'Classification & Data Cleaning',
     description:
-      'Get detailed owner information for any property. Know who owns the property, their mailing address, and ownership history.',
+      'Every property is automatically categorized into one or more of 17 motivated-seller categories, then normalized and de-duplicated — owner names, addresses, parcel numbers, and financials are cleaned before anything hits your CRM.',
     bullets: [
-      'Owner names and addresses',
-      'Ownership history',
-      'Tax assessment details',
-      'Loan information when available',
+      'Tax delinquent, lien, deed, pre-foreclosure, probate, vacant & more',
+      'Address, owner name & ZIP normalization',
+      'Automatic duplicate detection across runs',
+      'Properties can belong to multiple categories at once',
     ],
-    icon: User,
-    imageAlt: 'Owner information display',
+    icon: Layers,
+    imageAlt: 'Classification pipeline',
+    cta: { label: 'View the Lead CRM', href: '/leads' },
   },
   {
-    id: 'deal-analysis',
-    title: 'Deal Analysis',
+    id: 'contact-enrichment',
+    title: 'Contact Enrichment & Skip Tracing',
     description:
-      'Analyze deals with our powerful tools. Calculate ARV, apply the 70% rule, and compare with comparable sales.',
+      'Missing owner contact info is enriched automatically with a confidence score for every match. Low-confidence results are rejected, and every lookup is written to an audit log.',
     bullets: [
-      'After Repair Value (ARV) calculator',
-      '70% rule calculator',
-      'Comparable sales analysis',
-      'ROI projections',
+      'Phone, email & mailing address enrichment',
+      'LLC / corporate ownership lookups',
+      'Confidence scoring with automatic rejection threshold',
+      'Full enrichment audit trail per lead',
     ],
-    icon: Calculator,
-    imageAlt: 'Deal analysis tools',
+    icon: UserSearch,
+    imageAlt: 'Skip tracing results',
+    cta: { label: 'Try Skip Tracing', href: '/skip-trace' },
   },
   {
-    id: 'marketing-campaigns',
-    title: 'Marketing Campaigns',
+    id: 'lead-scoring',
+    title: 'AI Motivation Scoring',
     description:
-      'Build targeted marketing lists and run campaigns directly from PropStream. Reach property owners through direct mail and email.',
+      'Every lead gets a 0–100 motivation score from equity, delinquent taxes, foreclosure stage, vacancy, probate, liens, bankruptcy, ownership length, absentee status, and condition indicators — highest priority leads always sort first.',
     bullets: [
-      'Direct mail campaigns',
-      'Email marketing',
-      'Pre-written templates',
-      'Campaign tracking',
+      'Transparent, explainable 0–100 scoring model',
+      'AI-generated property summaries & investor/owner-occupant detection',
+      'Recommended outreach channel per lead',
+      'Suggested follow-up timing based on urgency',
     ],
-    icon: Mail,
-    imageAlt: 'Marketing campaign tools',
+    icon: Target,
+    imageAlt: 'Motivation scoring',
+    cta: { label: 'See the Dashboard', href: '/dashboard' },
   },
   {
-    id: 'market-analytics',
-    title: 'Market Analytics',
+    id: 'outreach-campaigns',
+    title: 'Multi-Channel Outreach Campaigns',
     description:
-      'Access real-time market data and trends. Find hot markets, analyze neighborhoods, and make data-driven decisions.',
+      'Launch personalized campaigns across email, SMS, ringless voicemail, direct mail, and manual call tasks — with editable templates, merge variables, and delivery tracking.',
     bullets: [
-      'Market trend analysis',
-      'Neighborhood comparisons',
-      'Rental rate estimates',
-      'Appreciation data',
+      'Email (SendGrid/Mailgun), SMS & voicemail (Twilio) when configured',
+      'Direct mail & call-task workflows',
+      'Variables: owner name, address, city, county, equity, foreclosure date',
+      'Delivery status, replies & appointments tracked per lead',
     ],
-    icon: BarChart3,
-    imageAlt: 'Market analytics dashboard',
+    icon: Send,
+    imageAlt: 'Campaign builder',
+    cta: { label: 'Build a Campaign', href: '/campaigns/new' },
   },
   {
-    id: 'skip-tracing',
-    title: 'Skip Tracing',
+    id: 'dashboard-crm',
+    title: 'Dashboard, CRM & Integrations',
     description:
-      'Find current contact information for property owners. Get phone numbers and email addresses to reach them directly.',
+      'A searchable CRM keeps every owner, property, contact, category, score, note, tag and follow-up in one place, with a live dashboard tracking the metrics that matter — and webhook sync out to Zapier, Make, n8n, Airtable, Google Sheets, Notion, HubSpot, GoHighLevel and Salesforce.',
     bullets: [
-      'Phone number lookup',
-      'Email address finder',
-      'Multiple data sources',
-      'High accuracy rates',
+      'New leads, outreach sent, replies, appointments & cost per lead',
+      'Search & filter by state, county, ZIP, score, status & more',
+      'Supabase/PostgreSQL persistence with CSV export',
+      'Outbound webhook sync to your CRM or spreadsheet of choice',
     ],
-    icon: Phone,
-    imageAlt: 'Skip tracing tools',
+    icon: LayoutDashboard,
+    imageAlt: 'Dashboard overview',
+    cta: { label: 'View Integrations', href: '/integrations' },
   },
 ];
 
@@ -94,18 +99,18 @@ export default function FeaturesPage() {
   return (
     <div className="py-20">
       {/* Hero */}
-      <div className="text-center mb-16">
+      <div className="text-center mb-16 px-4">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Everything You Need to Find Deals
+          Everything in the Build Prompt, Built In
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Powerful tools designed for real estate investors. Find properties,
-          analyze deals, and run marketing campaigns all in one place.
+          Collection, classification, cleaning, enrichment, scoring, campaign building and
+          outreach — one Launch button runs the entire distressed-property pipeline.
         </p>
       </div>
 
       {/* Feature Sections */}
-      <div className="space-y-24">
+      <div className="space-y-24 max-w-7xl mx-auto px-4">
         {featureSections.map((feature, index) => (
           <div
             key={feature.id}
@@ -135,11 +140,11 @@ export default function FeaturesPage() {
                 asChild
                 className="bg-[#1a56db] hover:bg-[#1e40af] text-white"
               >
-                <Link href="/signup">Get Started</Link>
+                <Link href={feature.cta.href}>{feature.cta.label}</Link>
               </Button>
             </div>
 
-            {/* Image Placeholder */}
+            {/* Icon panel */}
             <div
               className={`bg-gradient-to-br from-[#1a56db]/10 to-[#f97316]/10 rounded-2xl aspect-video flex items-center justify-center ${
                 index % 2 === 1 ? 'lg:order-1' : ''
@@ -155,19 +160,19 @@ export default function FeaturesPage() {
       </div>
 
       {/* CTA */}
-      <div className="mt-24 text-center">
+      <div className="mt-24 text-center px-4">
         <h2 className="text-3xl font-bold text-gray-900 mb-4">
           Ready to Find Your Next Deal?
         </h2>
         <p className="text-lg text-gray-600 mb-8">
-          Join thousands of investors using PropStream to find deals.
+          Join the investors using Hydrascout to automate their lead generation.
         </p>
         <Button
           asChild
           size="lg"
           className="bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold"
         >
-          <Link href="/signup">Start Free Trial</Link>
+          <Link href="/signup">Start Free</Link>
         </Button>
       </div>
     </div>

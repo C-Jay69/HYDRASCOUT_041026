@@ -87,7 +87,7 @@ export function CreditTopUp({ open, onOpenChange }: CreditTopUpProps) {
             Top Up Credits
           </DialogTitle>
           <DialogDescription>
-            Purchase additional credits to use across all PropStream features.
+            Purchase additional credits to use across all Hydrascout features.
           </DialogDescription>
         </DialogHeader>
 

@@ -7,7 +7,7 @@ import GlobalClientEffects from "@/components/GlobalClientEffects";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "HYDRAWIRE - Distressed Property Lead Generation & Outreach",
+  title: "HYDRASCOUT - Distressed Property Lead Generation & Outreach",
   description: "Automated distressed property lead generation, enrichment, scoring and outreach platform.",
 };
 

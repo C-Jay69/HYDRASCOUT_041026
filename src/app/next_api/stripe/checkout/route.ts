@@ -36,8 +36,8 @@ export async function POST(request: Request) {
               quantity: 1,
             },
           ],
-          successUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/(dashboard)/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
-          cancelUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/(dashboard)/billing?canceled=true`,
+          successUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3050'}/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3050'}/billing?canceled=true`,
         },
       });
     } else if (mode === 'payment' && amount) {
@@ -52,17 +52,17 @@ export async function POST(request: Request) {
                 currency: 'usd',
                 unitAmount: amount,
                 productData: {
-                  name: productName || 'PropStream Credits',
+                  name: productName || 'Hydrascout Credits',
                   description: credits
-                    ? `${credits} PropStream Credits`
-                    : productDescription || 'PropStream Purchase',
+                    ? `${credits} Hydrascout Credits`
+                    : productDescription || 'Hydrascout Purchase',
                 },
               },
               quantity: 1,
             },
           ],
-          successUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/(dashboard)/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
-          cancelUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/(dashboard)/billing?canceled=true`,
+          successUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3050'}/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3050'}/billing?canceled=true`,
         },
       });
     } else {

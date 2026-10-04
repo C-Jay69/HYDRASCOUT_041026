@@ -12,9 +12,9 @@ import {
   CREDIT_PACKAGES,
 } from '@/lib/subscription';
 
-const STORAGE_KEY = 'propstream_subscription';
-const TRANSACTIONS_KEY = 'propstream_transactions';
-const CREDITS_KEY = 'propstream_credits';
+const STORAGE_KEY = 'hydrascout_subscription';
+const TRANSACTIONS_KEY = 'hydrascout_transactions';
+const CREDITS_KEY = 'hydrascout_credits';
 
 interface UseSubscriptionReturn {
   subscription: Subscription;
@@ -177,7 +177,7 @@ export function useSubscription(): UseSubscriptionReturn {
           credits: creditsAmount,
           amount,
           productName: `${creditsAmount} Credits Top-Up`,
-          productDescription: 'PropStream Credits',
+          productDescription: 'Hydrascout Credits',
         }),
       });
 

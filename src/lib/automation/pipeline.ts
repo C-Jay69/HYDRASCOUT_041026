@@ -27,6 +27,7 @@ import { sendOutreach, simulateEngagement } from './outreach';
 import { DEFAULT_TEMPLATES } from './templates';
 import { getStore } from './store';
 import { uid } from './rng';
+import { configuredOutboundWebhooks, syncExternalPlatforms } from './integrations';
 
 const MAX_RECORDS_PER_RUN = 400;
 const MAX_AI_LEADS = 12; // cap LLM calls per run
@@ -213,7 +214,7 @@ export async function executePipeline(run: AutomationRun): Promise<void> {
 
     /* -------- Stage 7: outreach -------- */
     await ctx.setStage('outreach');
-    const providersLive = Boolean(process.env.SENDGRID_API_KEY || process.env.TWILIO_ACCOUNT_SID);
+    const providersLive = Boolean(process.env.SENDGRID_API_KEY || process.env.MAILGUN_API_KEY || process.env.TWILIO_ACCOUNT_SID);
     await ctx.log('info', 'outreach', providersLive
       ? 'Live providers detected — sending through configured channels.'
       : 'No outreach provider keys set — running in SIMULATION mode (messages personalized & logged, nothing actually sent).');
@@ -281,6 +282,22 @@ export async function executePipeline(run: AutomationRun): Promise<void> {
     run.stats.followUpsScheduled = followUps.length;
     await ctx.log('success', 'followups', `${followUps.length} follow-ups scheduled (timing suggested per lead urgency).`);
     await ctx.completeStage('followups');
+
+    /* -------- step 11: sync to external CRMs / spreadsheets -------- */
+    const webhooks = configuredOutboundWebhooks();
+    if (webhooks.length) {
+      await ctx.log('info', 'followups', `Syncing campaign to ${webhooks.map((w) => w.name).join(', ')}...`);
+      try {
+        const outcomes = await syncExternalPlatforms(run, campaign, campaignLeads);
+        for (const o of outcomes) {
+          await ctx.log(o.ok ? 'success' : 'warn', 'followups', o.ok
+            ? `${o.name}: synced successfully.`
+            : `${o.name}: sync failed (${o.detail}).`);
+        }
+      } catch (err) {
+        await ctx.log('warn', 'followups', `External sync skipped: ${err instanceof Error ? err.message : err}`);
+      }
+    }
 
     /* -------- done -------- */
     campaign.status = 'completed';

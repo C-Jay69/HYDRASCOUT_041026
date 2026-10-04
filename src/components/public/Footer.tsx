@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Twitter, Linkedin, Facebook, Youtube } from 'lucide-react';
+import { BrandLogo } from '@/components/BrandLogo';
 
 const footerLinks = {
   product: [
@@ -37,21 +38,7 @@ export function Footer() {
           {/* Logo & Tagline */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-[#1a56db] flex items-center justify-center">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="w-5 h-5 text-white"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                  <polyline points="9 22 9 12 15 12 15 22" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold text-white">
-                Prop<span className="text-[#1a56db]">Stream</span>
-              </span>
+              <BrandLogo size={32} textClassName="text-white" />
             </Link>
             <p className="text-sm text-gray-400 mb-6 max-w-xs">
               The most comprehensive real estate investment platform. Find deals, analyze properties, and grow your portfolio.
@@ -127,7 +114,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-gray-400">
-            &copy; {new Date().getFullYear()} PropStream. All rights reserved.
+            &copy; {new Date().getFullYear()} Hydrascout. All rights reserved.
           </p>
           <div className="flex gap-6">
             <Link href="/privacy" className="text-sm hover:text-white transition-colors">

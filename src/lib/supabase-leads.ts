@@ -28,11 +28,11 @@ interface DemoDB {
 }
 
 function demoDB(): DemoDB {
-  const g = globalThis as unknown as { __hydrawireDemoDB?: DemoDB };
-  if (!g.__hydrawireDemoDB) {
-    g.__hydrawireDemoDB = { savedSearches: [], leadLists: [], listProperties: [] };
+  const g = globalThis as unknown as { __hydrascoutDemoDB?: DemoDB };
+  if (!g.__hydrascoutDemoDB) {
+    g.__hydrascoutDemoDB = { savedSearches: [], leadLists: [], listProperties: [] };
   }
-  return g.__hydrawireDemoDB;
+  return g.__hydrascoutDemoDB;
 }
 
 const newId = () => `demo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;

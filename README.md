@@ -1,6 +1,6 @@
-# 🏠 HYDRAWIRE — Automated Distressed Property Lead Generation & Outreach System
+# 🏠 HYDRASCOUT — Automated Distressed Property Lead Generation & Outreach System
 
-HYDRAWIRE turns the entire distressed-property workflow into **one button**. Press **Launch** and the platform automatically:
+HYDRASCOUT turns the entire distressed-property workflow into **one button**. Press **Launch** and the platform automatically:
 
 1. **Collects** property records from 21 registered government/public data-source connectors (tax assessor, recorder, sheriff sales, probate, bankruptcy, code enforcement, NOD/NTS, lis pendens, HUD, and more)
 2. **Classifies** every property across 17 distress categories (foreclosure, tax lien, probate, vacant, absentee, high equity, …)
@@ -8,10 +8,14 @@ HYDRAWIRE turns the entire distressed-property workflow into **one button**. Pre
 4. **Enriches** owner contact info via a pluggable skip-trace provider (confidence scoring, low-confidence rejection, full audit log)
 5. **Scores** every lead 0–100 for seller motivation
 6. **Builds campaign lists** filtered by minimum score
-7. **Sends outreach** through your selected channels — Email (SendGrid), SMS (Twilio), ringless voicemail, direct mail, or manual call tasks — with AI-personalized messages
+7. **Sends outreach** through your selected channels — Email (Sender.net, with SendGrid/Mailgun fallback), SMS/voice (Twilio), ringless voicemail, direct mail, or manual call tasks — with AI-personalized messages
 8. **Logs every action**, tracks delivery status, and **schedules follow-ups** timed to each lead's urgency
 
 Works **out of the box with zero configuration** (demo mode: in-memory data + simulated outreach) and upgrades to persistent, live infrastructure as you add API keys.
+
+> 📘 Looking for a guide on actually *operating* the app day-to-day (running
+> the Launch wizard, working the CRM, campaigns, billing, etc.)? See
+> **[`HOW_TO_USE.md`](HOW_TO_USE.md)**.
 
 ---
 
@@ -20,11 +24,13 @@ Works **out of the box with zero configuration** (demo mode: in-memory data + si
 | Layer | Technology |
 |---|---|
 | Framework | Next.js 15 (App Router) + React 19 + TypeScript |
-| Database | Supabase (PostgreSQL) — optional; in-memory demo store without it |
+| Database | Supabase (PostgreSQL) or any Postgres instance — optional; in-memory demo store without it |
 | Styling | Tailwind CSS 4 + shadcn/ui |
-| Outreach | SendGrid (email), Twilio (SMS), provider stubs for RVM/direct mail |
-| AI | OpenAI or Anthropic (optional; heuristic fallbacks built in) |
-| External workflows | n8n / Make.com webhook hook for real county scrapers |
+| Outreach | Sender.net (primary email), SendGrid/Mailgun (email fallback), Twilio (SMS/voice) |
+| Data enrichment | Pluggable skip-trace provider interface (e.g. Melissa) |
+| AI | OpenAI, Anthropic, Google Gemini, OpenRouter, NVIDIA NIM, or OpenCode Zen (tried in that order; optional — heuristic fallbacks built in) |
+| Payments | Stripe (Checkout + webhooks); demo mode when unconfigured |
+| External workflows | n8n / Make.com webhook hook for real county scrapers, plus outbound webhooks to Zapier/Make/n8n/any CRM |
 
 ---
 
@@ -34,8 +40,8 @@ Works **out of the box with zero configuration** (demo mode: in-memory data + si
 
 ```bash
 # 1. Clone & install (Node.js 18+; use --legacy-peer-deps for npm)
-git clone https://github.com/C-Jay69/HYDRAWIRE_050726.git
-cd HYDRAWIRE_050726
+git clone https://github.com/C-Jay69/HYDRASCOUT_041026.git
+cd HYDRASCOUT_041026
 npm install --legacy-peer-deps     # or: pnpm install / bun install
 
 # 2. (Optional) configure environment
@@ -69,12 +75,22 @@ All variables are **optional** — each unlocks a capability:
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL (persistent database) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/publishable key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role key (server-side pipeline writes) |
-| `SENDGRID_API_KEY` + `SENDGRID_FROM_EMAIL` | Real email sending (otherwise simulated) |
-| `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` + `TWILIO_FROM_NUMBER` | Real SMS sending (otherwise simulated) |
-| `OPENAI_API_KEY` (or `ANTHROPIC_API_KEY`) | LLM-written lead summaries & outreach copy (otherwise heuristic templates) |
+| `DATABASE_URL` | Direct Postgres connection string (self-hosted Postgres, or Supabase's connection string) |
+| `SENDER_API_TOKEN` + `SENDER_FROM_EMAIL` + `SENDER_FROM_NAME` | Real email sending via **Sender.net** — the primary provider, checked first (otherwise simulated) |
+| `SENDGRID_API_KEY` + `SENDGRID_FROM_EMAIL` | Email fallback used if Sender.net isn't configured |
+| `MAILGUN_API_KEY` + `MAILGUN_DOMAIN` + `MAILGUN_FROM_EMAIL` | Final email fallback when neither Sender.net nor SendGrid is configured |
+| `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` + `TWILIO_FROM_NUMBER` | Real SMS sending (otherwise simulated). `TWILIO_VOICEMAIL_TWIML_URL` is reserved for a future ringless-voicemail/voice-drop integration |
+| `MELISSA_API_KEY` | Reserved for a real skip-trace/contact-enrichment provider (see `src/lib/automation/enrich.ts`); the demo skip-trace simulator runs until a provider is wired to this key |
+| `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` / `OPENROUTER_API_KEY` / `NVIDIA_NIM_KEY` / `OPENCODE_ZEN_KEY` | LLM-written lead summaries & outreach copy — tried in that order, first one configured wins (otherwise heuristic templates) |
 | `N8N_WEBHOOK_URL` | Calls your n8n/Make.com workflow during the Collect stage and ingests any `{ records: [...] }` it returns — this is how you plug in **real county scrapers** |
+| `ZAPIER_WEBHOOK_URL` / `MAKE_WEBHOOK_URL` / `N8N_CRM_WEBHOOK_URL` / `CRM_WEBHOOK_URL` | After every completed campaign, POSTs the lead list + stats to any of these — bridge to Airtable, Google Sheets, Notion, HubSpot, GoHighLevel or Salesforce from the receiving automation. See `/integrations` in the app. |
+| `COMPANY_NAME` / `COMPANY_PHONE` / `COMPANY_WEBSITE` | Used inside outreach templates (`{{company_name}}`, `{{company_phone}}`, `{{company_website}}`) |
+| `NEXT_PUBLIC_COMPANY_NAME` / `NEXT_PUBLIC_COMPANY_EMAIL` / `NEXT_PUBLIC_COMPANY_PHONE` | Shown on the public Contact page |
+| `NEXT_PUBLIC_APP_URL` | Public URL of this deployment (Stripe redirect URLs, template links) — e.g. `https://hydrascout.online` in production |
+| `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` + `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Real billing on `/billing` (otherwise demo mode — upgrades are simulated locally) |
+| `NEXT_PUBLIC_STRIPE_PRICE_ID_BASIC` / `NEXT_PUBLIC_STRIPE_PRICE_ID_PRO` / `NEXT_PUBLIC_STRIPE_PRICE_ID_TEAM` | Real Stripe recurring Price IDs — set one and that plan's "Upgrade" button opens real Stripe Checkout instead of simulating |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Map view on the Search page |
-| `HYDRAWIRE_FORCE_DEMO=true` | Force in-memory demo mode even with Supabase configured |
+| `HYDRASCOUT_FORCE_DEMO=true` | Force in-memory demo mode even with Supabase configured |
 
 ### Seed demo properties into Supabase (optional)
 
@@ -126,7 +142,7 @@ Demo connectors synthesize realistic county records so you can exercise the full
 
 ### ⚖️ Compliance notes
 
-- **SMS & ringless voicemail** require prior express consent or another lawful basis in most jurisdictions (TCPA in the US). Without Twilio credentials, HYDRAWIRE simulates SMS — nothing is delivered. Built-in templates include opt-out language; keep it.
+- **SMS & ringless voicemail** require prior express consent or another lawful basis in most jurisdictions (TCPA in the US). Without Twilio credentials, HYDRASCOUT simulates SMS — nothing is delivered. Built-in templates include opt-out language; keep it.
 - Respect **DNC lists**, provider terms of service, and state-specific rules for contacting distressed homeowners (some states restrict solicitation of owners in foreclosure).
 - Enrichment must use **legally obtained data**. Every enrichment attempt is audit-logged (`enrichment_audits`) with provider, confidence, and rejection reasons.
 
@@ -183,9 +199,9 @@ src/
 │   ├── clean.ts                      # Classification, normalization, de-duplication
 │   ├── enrich.ts                     # Skip tracing (pluggable providers + audit log)
 │   ├── score.ts                      # 0-100 motivation scoring
-│   ├── ai.ts                         # Summaries, channel recommendation, message drafting (LLM or heuristic)
+│   ├── ai.ts                         # Summaries, channel recommendation, message drafting (multi-provider LLM chain or heuristic)
 │   ├── templates.ts                  # Default outreach templates with variables
-│   ├── outreach.ts                   # SendGrid / Twilio / simulated channel adapters
+│   ├── outreach.ts                   # Sender.net/SendGrid/Mailgun, Twilio, simulated channel adapters
 │   ├── store.ts                      # Supabase or in-memory persistence
 │   └── pipeline.ts                   # Orchestrator (retries, logging, progress)
 └── database/schema.sql               # Full PostgreSQL schema (15 tables)

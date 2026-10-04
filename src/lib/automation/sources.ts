@@ -235,7 +235,7 @@ export async function collectFromWebhook(config: AutomationConfig): Promise<RawR
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ event: 'hydrawire.collect', config }),
+    body: JSON.stringify({ event: 'hydrascout.collect', config }),
     signal: AbortSignal.timeout(30000),
   });
   if (!res.ok) throw new Error(`n8n webhook responded ${res.status}`);

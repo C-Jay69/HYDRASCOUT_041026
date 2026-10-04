@@ -100,7 +100,7 @@ export function UsageDashboard() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Building2 className="h-4 w-4 text-muted-foreground" />
-              Property Lookups
+              Leads Processed
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">

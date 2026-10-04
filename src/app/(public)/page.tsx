@@ -1,92 +1,91 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { FeatureCard } from '@/components/public/FeatureCard';
 import { TestimonialCard } from '@/components/public/TestimonialCard';
 import {
   Search,
-  User,
-  Calculator,
-  Mail,
-  BarChart3,
-  Phone,
-  Check,
+  Layers,
+  UserSearch,
+  Target,
+  Send,
+  LayoutDashboard,
   ArrowRight,
+  Rocket,
 } from 'lucide-react';
 
 const features = [
   {
     icon: Search,
-    title: 'Property Search',
+    title: 'Automated Data Collection',
     description:
-      'Search over 160 million properties with our intuitive map-based interface. Filter by location, price, property type, and more.',
+      'Pulls distressed-property leads from 21 government and public source types — tax assessors, sheriff sales, foreclosure auctions, probate courts, lien databases, and more.',
   },
   {
-    icon: User,
-    title: 'Owner Information',
+    icon: Layers,
+    title: 'Classification & Cleaning',
     description:
-      'Get detailed owner information including names, mailing addresses, and property ownership history instantly.',
+      'Every record is auto-categorized into 17 motivated-seller categories, normalized, and de-duplicated before it ever reaches your CRM.',
   },
   {
-    icon: Calculator,
-    title: 'Deal Analysis',
+    icon: UserSearch,
+    title: 'Contact Enrichment',
     description:
-      'Analyze deals with our powerful ARV calculator, 70% rule calculator, and automated comparable sales analysis.',
+      'Missing owner contact info is skip-traced automatically with a confidence score, an audit trail, and low-confidence matches rejected for you.',
   },
   {
-    icon: Mail,
-    title: 'Marketing Tools',
+    icon: Target,
+    title: 'AI Motivation Scoring',
     description:
-      'Build targeted marketing lists and send direct mail campaigns with our integrated marketing tools.',
+      'Every property gets a 0–100 motivation score based on equity, foreclosure stage, vacancy, probate, liens, and more — highest priority leads first.',
   },
   {
-    icon: BarChart3,
-    title: 'Market Analytics',
+    icon: Send,
+    title: 'Multi-Channel Outreach',
     description:
-      'Access real-time market trends, hot markets, and detailed neighborhood analytics to find the best opportunities.',
+      'Launch personalized email, SMS, ringless voicemail, direct mail, and call-task campaigns from editable templates with merge variables.',
   },
   {
-    icon: Phone,
-    title: 'Skip Tracing',
+    icon: LayoutDashboard,
+    title: 'Live Dashboard & CRM',
     description:
-      'Find phone numbers and email addresses for property owners to reach them directly.',
+      'Track new leads, outreach sent, replies, appointments, and cost per lead in real time, with full search, filters, and follow-up scheduling.',
   },
 ];
 
 const steps = [
   {
     number: '1',
-    title: 'Search',
-    description: 'Find properties using our advanced filters and interactive map',
+    title: 'Select Counties & Lead Types',
+    description: 'Choose the states, counties, and distress categories you want to target.',
   },
   {
     number: '2',
-    title: 'Analyze',
-    description: 'Evaluate equity, ARV, and deal potential with our analysis tools',
+    title: 'Pick Outreach Channels',
+    description: 'Select email, SMS, voicemail, direct mail, or call tasks — and customize templates.',
   },
   {
     number: '3',
-    title: 'Contact',
-    description: 'Build lists and run marketing campaigns to reach owners',
+    title: 'Press Launch',
+    description: 'The pipeline collects, classifies, enriches, scores, and contacts leads automatically.',
   },
 ];
 
 const testimonials = [
   {
     quote:
-      'PropStream has completely transformed how I find deals. I used to spend hours on county websites, now I find properties in minutes.',
+      'Hydrascout replaced four separate tools for us. One Launch click and the pipeline collects, scores, and texts our whole county list.',
     authorName: 'Michael Rodriguez',
     authorTitle: 'Real Estate Investor, 50+ deals',
   },
   {
     quote:
-      'The skip tracing feature alone has saved me thousands of dollars per month. My conversion rate has doubled since switching.',
+      'The motivation scoring alone changed how we prioritize calls. We stopped wasting time on low-equity, low-urgency leads.',
     authorName: 'Sarah Chen',
     authorTitle: 'Wholesale Real Estate, Houston TX',
   },
   {
     quote:
-      'Best investment I have made for my real estate business. The data accuracy is incredible and the interface is so intuitive.',
+      'Skip tracing with a confidence score and audit log gives our acquisitions team the compliance paper trail we needed.',
     authorName: 'James Thompson',
     authorTitle: 'House Flipping, Dallas TX',
   },
@@ -102,46 +101,49 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0zNiAxOGMtOS45NDEgMC0xOCA4LjA1OS0xOCAxOHM4LjA1OSAxOCAxOCAxOCAxOC04LjA1OSAxOC0xOC04LjA1OS0xOC0xOC0xOHptMCAzMmMtNy43MzIgMC0xNC02LjI2OC0xNC0xNHM2LjI2OC0xNCAxNC0xNCAxNCA2LjI2OCAxNCAxNC02LjI2OCAxNC0xNCAxNHoiIHN0cm9rZT0iIzFhNTZkYiIgc3Ryb2tlLW9wYWNpdHk9Ii4wNSIvPjwvZz48L3N2Zz4=')] opacity-40" />
 
         <div className="relative max-w-4xl mx-auto text-center px-4">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#1a56db]/10 text-[#1a56db] text-sm font-medium px-4 py-1.5 mb-6">
+            <Rocket className="w-4 h-4" />
+            One button. Full pipeline.
+          </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-            Find Investment-Ready Properties in{' '}
-            <span className="text-[#1a56db]">Minutes</span>
+            Find & Contact Motivated Sellers{' '}
+            <span className="text-[#1a56db]">Automatically</span>
           </h1>
           <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-            Access 160+ million property records, analyze deals, and build
-            marketing lists without the spreadsheets.
+            Hydrascout collects distressed-property data from government and public sources,
+            enriches owner contact info, scores every lead, and launches outreach — all from a
+            single Launch button.
           </p>
 
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto mb-12">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Input
-                type="text"
-                placeholder="Enter address, city, or zip code..."
-                className="h-12 text-base flex-1"
-              />
-              <Button
-                size="lg"
-                className="h-12 bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold px-8"
-              >
-                <Search className="w-4 h-4 mr-2" />
-                Search Properties
-              </Button>
-            </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <Button
+              size="lg"
+              className="h-12 bg-[#f97316] hover:bg-[#ea580c] text-white font-semibold px-8"
+              asChild
+            >
+              <Link href="/signup">
+                Get Started Free
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" className="h-12 px-8" asChild>
+              <Link href="/demo">See How It Works</Link>
+            </Button>
           </div>
 
           {/* Stats Row */}
           <div className="flex flex-wrap justify-center gap-8 md:gap-16">
             <div className="text-center">
-              <p className="text-3xl font-bold text-[#1a56db]">160M+</p>
-              <p className="text-sm text-gray-600">Properties</p>
+              <p className="text-3xl font-bold text-[#1a56db]">21</p>
+              <p className="text-sm text-gray-600">Public data sources</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold text-[#1a56db]">98%</p>
-              <p className="text-sm text-gray-600">Accuracy</p>
+              <p className="text-3xl font-bold text-[#1a56db]">17</p>
+              <p className="text-sm text-gray-600">Distress categories</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold text-[#1a56db]">10K+</p>
-              <p className="text-sm text-gray-600">Investors</p>
+              <p className="text-3xl font-bold text-[#1a56db]">5</p>
+              <p className="text-sm text-gray-600">Outreach channels</p>
             </div>
           </div>
         </div>
@@ -152,11 +154,11 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Everything You Need to Find Deals
+              Every Step of the Workflow, Automated
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Our comprehensive platform gives you all the tools you need to
-              find, analyze, and market investment properties.
+              From raw county records to a dispatched, tracked outreach campaign — without
+              spreadsheets or manual data entry.
             </p>
           </div>
 
@@ -181,7 +183,7 @@ export default function HomePage() {
               How It Works
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Get started in minutes with our simple three-step process.
+              Launch → Select Counties → Select Lead Types → Select Outreach Channels → Review → Start.
             </p>
           </div>
 
@@ -202,6 +204,15 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+
+          <div className="text-center mt-12">
+            <Button size="lg" className="bg-[#1a56db] hover:bg-[#1e40af] text-white px-8" asChild>
+              <Link href="/automation/launch">
+                Try the Launch Wizard
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -210,10 +221,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Trusted by 10,000+ Real Estate Investors
+              Trusted by Real Estate Investors
             </h2>
             <p className="text-lg text-gray-600">
-              See what our customers are saying about PropStream.
+              See what our customers are saying about Hydrascout.
             </p>
           </div>
 

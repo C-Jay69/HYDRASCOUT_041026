@@ -38,7 +38,7 @@ const FIRST = ['James', 'Mary', 'Robert', 'Patricia', 'John', 'Jennifer', 'Micha
 const LAST = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis'];
 
 export const demoSkipTraceProvider: EnrichmentProvider = {
-  name: 'HYDRAWIRE Demo Skip Trace',
+  name: 'HYDRASCOUT Demo Skip Trace',
   async enrich(lead: Lead): Promise<EnrichmentResult> {
     // Deterministic per lead so re-runs are stable
     const rng = createRng(lead.dedupeKey);

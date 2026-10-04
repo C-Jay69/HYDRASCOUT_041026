@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Rocket,
   Users,
+  UserSearch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ const navItems: NavItem[] = [
   { title: "Launch Automation", href: "/automation/launch", icon: Rocket },
   { title: "Lead CRM", href: "/leads", icon: Users },
   { title: "Property Search", href: "/search", icon: Map },
+  { title: "Skip Trace", href: "/skip-trace", icon: UserSearch },
   { title: "Lead Lists", href: "/lists", icon: List },
   { title: "Campaigns", href: "/campaigns", icon: Mail },
   { title: "Analytics", href: "/analytics", icon: BarChart3 },
