@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { BrandLogo } from '@/components/BrandLogo';
 
 const navLinks = [
   { href: '/features', label: 'Features' },
@@ -37,21 +38,7 @@ export function PublicHeader() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#1a56db] flex items-center justify-center">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                className="w-5 h-5 text-white"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-              </svg>
-            </div>
-            <span className="text-xl font-bold text-gray-900">
-              Hydra<span className="text-[#1a56db]">Scout</span>
-            </span>
+            <BrandLogo size={32} priority textClassName="text-gray-900" />
           </Link>
 
           {/* Desktop Navigation */}

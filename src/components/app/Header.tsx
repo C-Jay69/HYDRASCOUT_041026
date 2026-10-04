@@ -31,6 +31,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Sidebar } from "./Sidebar";
 import { signOut } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
+import { BrandLogo } from "@/components/BrandLogo";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -84,21 +85,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1a56db]">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              className="h-5 w-5 text-white"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-          </div>
-          <span className="hidden md:inline-block text-xl font-bold">
-            Hydra<span className="text-[#1a56db]">Scout</span>
-          </span>
+          <BrandLogo size={32} priority textClassName="hidden md:inline-block" />
         </Link>
 
         {/* Search Bar */}
