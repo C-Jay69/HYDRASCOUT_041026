@@ -148,7 +148,7 @@ export default function LeadsPage() {
     const blob = new Blob([csv], { type: 'text/csv' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `hydrawire-leads-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `hydrascout-leads-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
   };
 

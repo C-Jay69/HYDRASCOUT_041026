@@ -1,3 +1,7 @@
+// NOTE: these priceId values are placeholders. If you connect a real
+// STRIPE_SECRET_KEY, create matching recurring Prices in your Stripe
+// dashboard with these lookup keys (or swap in your own Price IDs) —
+// otherwise checkout automatically falls back to local demo mode.
 export const PLANS = {
   free: {
     name: 'Free',

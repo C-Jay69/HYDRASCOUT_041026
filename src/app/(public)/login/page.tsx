@@ -26,7 +26,7 @@ export default function LoginPage() {
 
     // Demo: accept any credentials
     if (formData.email && formData.password) {
-      localStorage.setItem('propstream_user', JSON.stringify({
+      localStorage.setItem('hydrascout_user', JSON.stringify({
         email: formData.email,
         loggedIn: true,
       }));
@@ -66,7 +66,7 @@ export default function LoginPage() {
                 </svg>
               </div>
               <span className="text-xl font-bold text-gray-900">
-                Prop<span className="text-[#1a56db]">Stream</span>
+                Hydra<span className="text-[#1a56db]">Scout</span>
               </span>
             </Link>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">

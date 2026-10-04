@@ -10,7 +10,7 @@ export interface User {
 // Demo user for testing
 const DEMO_USER: User = {
   id: "demo-user-1",
-  email: "demo@propstream.com",
+  email: "demo@hydrascout.com",
   name: "Demo User",
 };
 

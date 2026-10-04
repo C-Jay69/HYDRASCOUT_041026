@@ -10,14 +10,14 @@ const plans = [
   {
     name: 'Free',
     price: 0,
-    description: 'Perfect for getting started',
+    description: 'Try the full pipeline on one county',
     features: [
-      { label: '50 property lookups/mo', included: true },
-      { label: 'Basic search filters', included: true },
-      { label: 'Owner information', included: true },
-      { label: 'Skip tracing', included: false },
-      { label: 'Marketing tools', included: false },
-      { label: 'Market analytics', included: false },
+      { label: '1 county, up to 100 leads/mo', included: true },
+      { label: 'All 17 lead categories', included: true },
+      { label: 'Motivation scoring & dashboard', included: true },
+      { label: 'Skip tracing / enrichment', included: false },
+      { label: 'Outreach campaigns', included: false },
+      { label: 'CRM webhook sync', included: false },
     ],
     cta: 'Get Started',
     href: '/signup',
@@ -26,14 +26,14 @@ const plans = [
   {
     name: 'Basic',
     price: 49,
-    description: 'For serious investors',
+    description: 'For solo investors running one market',
     features: [
-      { label: '500 property lookups/mo', included: true },
-      { label: 'Advanced search filters', included: true },
-      { label: 'Owner information', included: true },
-      { label: '25 skip traces/mo', included: true },
-      { label: '100 mail pieces/mo', included: true },
-      { label: 'Market analytics', included: false },
+      { label: '3 counties, up to 1,000 leads/mo', included: true },
+      { label: 'All 17 lead categories', included: true },
+      { label: 'Motivation scoring & dashboard', included: true },
+      { label: '100 skip traces/mo', included: true },
+      { label: 'Email + SMS outreach', included: true },
+      { label: 'CRM webhook sync', included: false },
     ],
     cta: 'Get Started',
     href: '/signup?plan=basic',
@@ -42,14 +42,14 @@ const plans = [
   {
     name: 'Pro',
     price: 99,
-    description: 'For active investors',
+    description: 'For active investors & small teams',
     features: [
-      { label: '2,000 property lookups/mo', included: true },
-      { label: 'Advanced search filters', included: true },
-      { label: 'Owner information', included: true },
-      { label: '100 skip traces/mo', included: true },
-      { label: '500 mail pieces/mo', included: true },
-      { label: 'Market analytics', included: true },
+      { label: '10 counties, up to 5,000 leads/mo', included: true },
+      { label: 'All 17 lead categories', included: true },
+      { label: 'Motivation scoring & dashboard', included: true },
+      { label: '500 skip traces/mo', included: true },
+      { label: 'Email, SMS, voicemail & direct mail', included: true },
+      { label: 'CRM webhook sync (Zapier/Make/n8n)', included: true },
     ],
     cta: 'Get Started',
     href: '/signup?plan=pro',
@@ -60,12 +60,12 @@ const plans = [
     price: 249,
     description: 'For teams and power users',
     features: [
-      { label: 'Unlimited property lookups', included: true },
-      { label: 'Advanced search filters', included: true },
-      { label: 'Owner information', included: true },
-      { label: '500 skip traces/mo', included: true },
-      { label: '2,000 mail pieces/mo', included: true },
-      { label: 'Market analytics', included: true },
+      { label: 'Unlimited counties & leads', included: true },
+      { label: 'All 17 lead categories', included: true },
+      { label: 'Motivation scoring & dashboard', included: true },
+      { label: 'Unlimited skip traces', included: true },
+      { label: 'Every outreach channel', included: true },
+      { label: 'CRM webhook sync + priority support', included: true },
     ],
     cta: 'Get Started',
     href: '/signup?plan=team',
@@ -80,29 +80,24 @@ const faqs = [
       'Yes, you can cancel your subscription at any time. You will continue to have access until the end of your billing period.',
   },
   {
-    question: 'What counts as a property lookup?',
+    question: 'What counts as a lead?',
     answer:
-      'A property lookup is counted each time you view detailed information about a specific property, including owner details, property characteristics, and sales history.',
+      'A lead is a unique property record that has passed through classification and deduplication and landed in your CRM — not a raw record pulled from a source.',
   },
   {
     question: 'How does skip tracing work?',
     answer:
-      'Skip tracing uses multiple data sources to find current contact information for property owners, including phone numbers and email addresses.',
+      'When ownership or contact info is missing, Hydrascout runs it through a configurable enrichment provider, scores the confidence of each match, and rejects anything below the threshold — with a full audit trail.',
   },
   {
-    question: 'Is my data secure?',
+    question: 'Do I need my own Twilio/SendGrid/OpenAI accounts?',
     answer:
-      'Yes, we take security seriously. All data is encrypted in transit and at rest. We are SOC 2 compliant and follow industry best practices.',
+      'No. Without any provider keys, Hydrascout runs outreach in simulation mode so you can test the full workflow risk-free. Add your own SendGrid, Mailgun, Twilio, OpenAI or Anthropic keys any time to go live — see /integrations.',
   },
   {
-    question: 'What payment methods do you accept?',
+    question: 'Is SMS and ringless voicemail compliant?',
     answer:
-      'We accept all major credit cards (Visa, Mastercard, American Express, Discover) and PayPal.',
-  },
-  {
-    question: 'Do you offer refunds?',
-    answer:
-      'We offer a 7-day money-back guarantee for new subscriptions. Contact our support team within 7 days of your purchase for a full refund.',
+      'You are responsible for complying with TCPA and applicable state law, including consent requirements, Do-Not-Call lists, and opt-out handling. Built-in SMS templates include opt-out language by default.',
   },
   {
     question: 'Can I upgrade or downgrade my plan?',
@@ -112,7 +107,7 @@ const faqs = [
   {
     question: 'Is there a free trial for paid plans?',
     answer:
-      'Our Free plan gives you access to basic features indefinitely. You can upgrade to a paid plan at any time when you are ready for more features.',
+      'Our Free plan gives you the full pipeline on one county indefinitely. You can upgrade to a paid plan at any time when you are ready for more counties and live outreach.',
   },
 ];
 

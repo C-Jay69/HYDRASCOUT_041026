@@ -50,7 +50,7 @@ export function PublicHeader() {
               </svg>
             </div>
             <span className="text-xl font-bold text-gray-900">
-              Prop<span className="text-[#1a56db]">Stream</span>
+              Hydra<span className="text-[#1a56db]">Scout</span>
             </span>
           </Link>
 

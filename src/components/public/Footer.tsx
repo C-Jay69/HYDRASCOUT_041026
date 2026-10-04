@@ -50,7 +50,7 @@ export function Footer() {
                 </svg>
               </div>
               <span className="text-xl font-bold text-white">
-                Prop<span className="text-[#1a56db]">Stream</span>
+                Hydra<span className="text-[#1a56db]">Scout</span>
               </span>
             </Link>
             <p className="text-sm text-gray-400 mb-6 max-w-xs">
@@ -127,7 +127,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-sm text-gray-400">
-            &copy; {new Date().getFullYear()} PropStream. All rights reserved.
+            &copy; {new Date().getFullYear()} Hydrascout. All rights reserved.
           </p>
           <div className="flex gap-6">
             <Link href="/privacy" className="text-sm hover:text-white transition-colors">

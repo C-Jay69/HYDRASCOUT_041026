@@ -2,7 +2,8 @@
  * Steps 7 & 8 — Outreach engine.
  *
  * Channel adapters send through real providers when configured:
- *   - Email: SendGrid (SENDGRID_API_KEY + SENDGRID_FROM_EMAIL)
+ *   - Email: SendGrid (SENDGRID_API_KEY + SENDGRID_FROM_EMAIL), falling back
+ *            to Mailgun (MAILGUN_API_KEY + MAILGUN_DOMAIN + MAILGUN_FROM_EMAIL)
  *   - SMS:   Twilio   (TWILIO_ACCOUNT_SID + TWILIO_AUTH_TOKEN + TWILIO_FROM_NUMBER)
  *   - Ringless voicemail / direct mail: provider stubs (Slybroadcast / Lob)
  *
@@ -53,18 +54,21 @@ export function simulateEngagement(lead: Lead, channel: OutreachChannel): {
 /* ------------------------- channel adapters ------------------------- */
 
 async function sendEmail(lead: Lead, subject: string, body: string): Promise<SendResult> {
-  const key = process.env.SENDGRID_API_KEY;
-  const from = process.env.SENDGRID_FROM_EMAIL;
+  const sgKey = process.env.SENDGRID_API_KEY;
+  const sgFrom = process.env.SENDGRID_FROM_EMAIL;
+  const mgKey = process.env.MAILGUN_API_KEY;
+  const mgDomain = process.env.MAILGUN_DOMAIN;
+  const mgFrom = process.env.MAILGUN_FROM_EMAIL || sgFrom;
   const to = lead.emails[0]?.address;
   if (!to) return { provider: 'sendgrid', simulated: true, status: 'failed', detail: 'No email on file' };
 
-  if (key && from) {
+  if (sgKey && sgFrom) {
     const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sgKey}` },
       body: JSON.stringify({
         personalizations: [{ to: [{ email: to }] }],
-        from: { email: from },
+        from: { email: sgFrom },
         subject,
         content: [{ type: 'text/plain', value: body }],
       }),
@@ -73,6 +77,23 @@ async function sendEmail(lead: Lead, subject: string, body: string): Promise<Sen
     if (res.status === 202) return { provider: 'sendgrid', simulated: false, status: 'sent' };
     return { provider: 'sendgrid', simulated: false, status: 'failed', detail: `SendGrid ${res.status}` };
   }
+
+  // Fallback to Mailgun if SendGrid isn't configured
+  if (mgKey && mgDomain && mgFrom) {
+    const form = new URLSearchParams({ from: mgFrom, to, subject, text: body });
+    const res = await fetch(`https://api.mailgun.net/v3/${mgDomain}/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: 'Basic ' + Buffer.from(`api:${mgKey}`).toString('base64'),
+      },
+      body: form,
+      signal: AbortSignal.timeout(15000),
+    });
+    if (res.ok) return { provider: 'mailgun', simulated: false, status: 'sent' };
+    return { provider: 'mailgun', simulated: false, status: 'failed', detail: `Mailgun ${res.status}` };
+  }
+
   return { provider: 'sendgrid (simulated)', simulated: true, status: simulateDelivery(lead, 'email') };
 }
 

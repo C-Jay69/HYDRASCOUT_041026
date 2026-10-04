@@ -154,11 +154,11 @@ interface MemoryDB {
 }
 
 function memoryDB(): MemoryDB {
-  const g = globalThis as unknown as { __hydrawireDB?: MemoryDB };
-  if (!g.__hydrawireDB) {
-    g.__hydrawireDB = { runs: [], leads: [], communications: [], followUps: [], audits: [], campaigns: [] };
+  const g = globalThis as unknown as { __hydrascoutDB?: MemoryDB };
+  if (!g.__hydrascoutDB) {
+    g.__hydrascoutDB = { runs: [], leads: [], communications: [], followUps: [], audits: [], campaigns: [] };
   }
-  return g.__hydrawireDB;
+  return g.__hydrascoutDB;
 }
 
 class MemoryStore implements Store {
@@ -437,7 +437,7 @@ class SupabaseStore implements Store {
 export function supabaseConfigured(): boolean {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_DATABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.DATABASE_SERVICE_ROLE_KEY;
-  return Boolean(url && key) && process.env.HYDRAWIRE_FORCE_DEMO !== 'true';
+  return Boolean(url && key) && process.env.HYDRASCOUT_FORCE_DEMO !== 'true';
 }
 
 let supabaseStore: SupabaseStore | null = null;

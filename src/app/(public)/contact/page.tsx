@@ -146,10 +146,10 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
                   <a
-                    href="mailto:support@propstream.com"
+                    href={`mailto:${process.env.NEXT_PUBLIC_COMPANY_EMAIL || 'support@hydrascout.com'}`}
                     className="text-gray-600 hover:text-[#1a56db] transition-colors"
                   >
-                    support@propstream.com
+                    {process.env.NEXT_PUBLIC_COMPANY_EMAIL || 'support@hydrascout.com'}
                   </a>
                 </div>
               </div>
@@ -164,10 +164,10 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
                   <a
-                    href="tel:+18005551234"
+                    href={`tel:${(process.env.NEXT_PUBLIC_COMPANY_PHONE || '+18005550100').replace(/[^+\d]/g, '')}`}
                     className="text-gray-600 hover:text-[#1a56db] transition-colors"
                   >
-                    (800) 555-1234
+                    {process.env.NEXT_PUBLIC_COMPANY_PHONE || '(800) 555-0100'}
                   </a>
                   <p className="text-sm text-gray-500 mt-1">
                     Toll-free for US customers

@@ -1,4 +1,4 @@
-# HYDRAWIRE Repository Audit & Compliance Report
+# HYDRASCOUT Repository Audit & Compliance Report
 
 **Date:** 2026-09-01
 **Reference:** "AI Prompt: Design an Automated Distressed Property Lead Generation & Outreach System.md"
@@ -64,3 +64,53 @@
 3. **In-memory mode is per-instance.** On serverless multi-instance deployments use Supabase for shared persistent state.
 4. **Auth is demo-grade** (any credentials accepted) — wire Supabase Auth before exposing publicly.
 5. Some pre-existing TypeScript looseness remains in the legacy lists feature (`ListTable`, `useLeadLists` prop typing); it does not affect the build (`ignoreBuildErrors`) or runtime.
+
+---
+
+## 6. Round 2 audit (2026-10-04) — brand/placeholder & remaining-gap pass
+
+A second pass was done against the same build prompt, this time focused on
+whether the *public-facing* product matched what was actually built, and on
+finding any remaining placeholder/dead content.
+
+### 6.1 Findings
+
+| # | Finding | Severity |
+|---|---|---|
+| 1 | **Entire public marketing site was an unmodified "PropStream clone."** Landing page, Features, Pricing, Login, Signup, Header/Footer branding, and `localStorage` keys all said **PropStream** (a real competitor product) instead of Hydrascout, and described generic property search/ARV-calculator features that don't exist in this build instead of the actual Launch → collect → classify → enrich → score → outreach pipeline. | 🔴 Blocker (brand/trust) |
+| 2 | **Contact page `mailto:support@propstream.com`** pointed at a real competitor's domain — outbound email from the contact form would never reach this product's team. | 🔴 Blocker |
+| 3 | **12 dead navigation links.** Footer/header linked to `/about`, `/careers`, `/legal`, `/privacy`, `/terms`, `/faq`, `/blog`, `/tutorials`, `/webinars`, `/resources`, `/integrations`, `/api`, `/demo`, `/forgot-password` — none of these routes existed (404). | 🟠 Major |
+| 4 | **Stripe checkout redirect bug.** `successUrl`/`cancelUrl` included the route-group segment `/(dashboard)/billing`, which is not a real URL in Next.js (route groups aren't part of the path) — a real Stripe redirect would 404. | 🟠 Major |
+| 5 | **Hardcoded fake contact info in outreach templates.** Direct-mail template had `(800) 555-0142` and `hydrascout.example.com/offer` baked in literally. | 🟡 Moderate |
+| 6 | **Non-functional dashboard header menu.** "Profile", "Settings", "Billing", and "Sign Out" dropdown items had no `href`/`onClick` — clicking them did nothing. Avatar/name were hardcoded to "John Doe". | 🟡 Moderate |
+| 7 | **Step 11 integrations under-delivered.** SendGrid/Twilio/OpenAI/Anthropic/n8n(in) were real; Mailgun (explicitly named in the prompt) and any path to Airtable/Google Sheets/Notion/HubSpot/GoHighLevel/Salesforce/Zapier/Make were missing entirely beyond CSV export. | 🟡 Moderate |
+| 8 | Residual `HYDRAWIRE` naming (env vars, code comments, README) left over from the project's previous name, inconsistent with the current repo (`HYDRASCOUT_041026`). | 🟢 Minor |
+
+### 6.2 Fixes applied
+
+- **Rebrand:** replaced every `PropStream`/`HYDRAWIRE` occurrence with `Hydrascout`/`HYDRASCOUT` across the app, docs, `.env.example`, and `localStorage` keys (header/footer logo, login/signup, auth demo user, outreach templates, env var names with back-compat note).
+- **Rewrote the public marketing site** (`/`, `/features`, `/pricing`) to actually describe this product: the 21-source collection pipeline, 17-category classification, enrichment/skip-tracing, 0–100 motivation scoring, multi-channel outreach, and dashboard/CRM/integrations — with CTAs linking to the real in-app Launch wizard, CRM, and skip-trace pages instead of generic "find deals" copy.
+- **Built all 14 previously-dead pages** with real content and working internal links: `/about`, `/careers`, `/legal`, `/privacy`, `/terms`, `/faq`, `/blog`, `/tutorials`, `/webinars`, `/resources`, `/integrations`, `/api`, `/demo`, `/forgot-password`.
+- **`/integrations`** now lists every Step 11 platform (Supabase, PostgreSQL, SendGrid, Mailgun, Twilio, OpenAI, Anthropic, n8n, Make, Zapier, Airtable, Google Sheets, Notion, HubSpot, GoHighLevel, Salesforce, Stripe) with real outbound links to each provider and a live "Connected / Not configured" status read from this deployment's environment.
+- **`/api`** documents the real REST endpoints this app exposes (`/api/automation/launch`, `/api/automation/runs[/id]`, `/api/automation/sources`, `/api/leads[/id]`, `/api/campaigns`, `/api/dashboard/stats`, `/api/health`) with actual request/response shapes.
+- **New outbound integration layer** (`src/lib/automation/integrations.ts`): after every completed campaign, Hydrascout POSTs the lead list + stats to any configured `ZAPIER_WEBHOOK_URL` / `MAKE_WEBHOOK_URL` / `N8N_CRM_WEBHOOK_URL` / `CRM_WEBHOOK_URL` — verified end-to-end against a local test receiver. This is how Airtable, Google Sheets, Notion, HubSpot, GoHighLevel and Salesforce are reached, per the prompt's Step 11.
+- **Mailgun email fallback** added to `outreach.ts` (used automatically when SendGrid isn't configured).
+- Fixed the Stripe `successUrl`/`cancelUrl` route-group bug (`/billing`, not `/(dashboard)/billing`).
+- Replaced hardcoded fake phone/domain in the direct-mail template with `{{company_phone}}` / `{{company_website}}` variables, sourced from new `COMPANY_PHONE` / `COMPANY_WEBSITE` env vars (documented in `.env.example`); Contact page email/phone now read from `NEXT_PUBLIC_COMPANY_EMAIL` / `NEXT_PUBLIC_COMPANY_PHONE` with sensible defaults instead of a competitor's address.
+- Wired up the dashboard header: working Sign Out (clears session, redirects to `/login`), Billing/Integration-settings links, real logged-in email/initials instead of "John Doe", and a functional top search bar that navigates to `/search`.
+- Added `/skip-trace` to the sidebar nav (it existed as a page but wasn't reachable from navigation).
+- Updated `README.md` (correct clone URL, new env vars) and `SPEC.md` (flagged as historical/original template spec, pointed at the current README/AUDIT).
+
+### 6.3 Verification performed
+
+- `next build` → ✅ compiles, 38 routes (24 → 38 after the new pages), zero route conflicts.
+- All 30 public + dashboard pages and all 6 API routes return HTTP 200 in a clean dev server run.
+- Re-ran the full Launch pipeline twice (TX/Harris+Dallas and FL/Miami-Dade) end-to-end after all changes — collect → classify → clean/dedupe → enrich → score → build campaign → outreach → follow-ups all still complete successfully.
+- Started a local webhook receiver and set `ZAPIER_WEBHOOK_URL` to it; confirmed the pipeline log reports `Zapier: synced successfully` and the receiver gets the POST — the new outbound integration path is real, not simulated.
+- Grepped the full source tree for `propstream`, `hydrawire`, `href="#"`, `example.com`, and other placeholder patterns — zero remaining matches outside one intentionally-labeled historical note in `SPEC.md`.
+
+### 6.4 Known limitations carried forward
+
+- Contact page email/phone and the direct-mail template's company phone/website are still **placeholder values by default** (`support@hydrascout.com`, `(800) 555-0100`) since this deployment has no real registered domain/phone — they're now environment-configurable (`NEXT_PUBLIC_COMPANY_EMAIL`, `NEXT_PUBLIC_COMPANY_PHONE`, `COMPANY_PHONE`, `COMPANY_WEBSITE`) so a real deployment can set them once without touching code.
+- Stripe billing remains in demo mode unless `STRIPE_SECRET_KEY` is set; the plan `priceId`s in `src/lib/subscription.ts` are placeholders to be replaced with real Stripe Price IDs (now explicitly commented).
+- `/property/[id]` (legacy property-search detail view) and the automation pipeline's Lead CRM remain two separate data models (Supabase/demo `properties` vs. in-memory/Supabase `leads`), as in the original build — the CRM's own in-page detail drawer is used instead of that route, so this isn't exposed as a dead link, but a future pass could unify them.

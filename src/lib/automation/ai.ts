@@ -158,6 +158,9 @@ export function renderTemplate(template: string, lead: Lead): string {
     estimated_equity: lead.equityEstimate !== null ? `$${Math.round(lead.equityEstimate).toLocaleString()}` : 'a significant amount of equity',
     foreclosure_date: lead.auctionDate || 'the upcoming sale date',
     motivation_score: String(lead.motivationScore),
+    company_name: process.env.COMPANY_NAME || process.env.NEXT_PUBLIC_COMPANY_NAME || 'Hydrascout Home Solutions',
+    company_phone: process.env.COMPANY_PHONE || process.env.NEXT_PUBLIC_COMPANY_PHONE || '(800) 555-0100',
+    company_website: process.env.COMPANY_WEBSITE || process.env.NEXT_PUBLIC_APP_URL || 'https://hydrascout.com',
   };
   return template.replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (_, key) => vars[key.toLowerCase()] ?? '');
 }

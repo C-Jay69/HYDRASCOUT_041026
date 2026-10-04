@@ -66,7 +66,7 @@ export function SignupForm() {
     // Simulate signup
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    localStorage.setItem('propstream_user', JSON.stringify({
+    localStorage.setItem('hydrascout_user', JSON.stringify({
       name: formData.name,
       email: formData.email,
       plan: selectedPlan,
@@ -75,7 +75,7 @@ export function SignupForm() {
 
     toast({
       title: 'Account created!',
-      description: 'Welcome to PropStream. Let\'s get started!',
+      description: 'Welcome to Hydrascout. Let\'s get started!',
     });
 
     router.push('/dashboard');
@@ -102,7 +102,7 @@ export function SignupForm() {
                 </svg>
               </div>
               <span className="text-xl font-bold text-gray-900">
-                Prop<span className="text-[#1a56db]">Stream</span>
+                Hydra<span className="text-[#1a56db]">Scout</span>
               </span>
             </Link>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">

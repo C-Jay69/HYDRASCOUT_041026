@@ -1,4 +1,14 @@
-# PropStream Clone - Real Estate Investment Platform
+# Hydrascout — Original Base Platform Spec (historical)
+
+> **Note:** This document describes the original general-purpose real-estate
+> search/CRM template this project started from. The platform has since been
+> built out into **Hydrascout**, an automated distressed-property lead
+> generation & outreach system — see [`README.md`](README.md) for the current
+> product and [`AUDIT.md`](AUDIT.md) for the build-prompt compliance matrix.
+> Sections below are kept for historical reference to the original UI/data
+> model this was layered on top of.
+
+# PropStream Clone - Real Estate Investment Platform (original template spec)
 
 ## 1. Concept & Vision
 

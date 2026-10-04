@@ -1,5 +1,5 @@
 /**
- * Lead Scoring Engine for HYDRAWIRE
+ * Lead Scoring Engine for HYDRASCOUT
  * Calculates a motivation score (0-100) based on distressed property indicators.
  */
 

@@ -41,29 +41,29 @@ import {
 
 const PLAN_FEATURES = {
   free: [
-    { label: 'Property Lookups', value: '50/month' },
+    { label: 'Leads (1 county)', value: '100/month' },
     { label: 'Skip Traces', value: false },
     { label: 'Direct Mail', value: false },
     { label: 'Export Data', value: false },
     { label: 'Priority Support', value: false },
   ],
   basic: [
-    { label: 'Property Lookups', value: '500/month' },
-    { label: 'Skip Traces', value: '25/month' },
-    { label: 'Direct Mail', value: '100 pieces' },
+    { label: 'Leads (3 counties)', value: '1,000/month' },
+    { label: 'Skip Traces', value: '100/month' },
+    { label: 'Direct Mail', value: false },
     { label: 'Export Data', value: 'CSV only' },
     { label: 'Priority Support', value: false },
   ],
   pro: [
-    { label: 'Property Lookups', value: '2,000/month' },
-    { label: 'Skip Traces', value: '100/month' },
+    { label: 'Leads (10 counties)', value: '5,000/month' },
+    { label: 'Skip Traces', value: '500/month' },
     { label: 'Direct Mail', value: '500 pieces' },
     { label: 'Export Data', value: 'CSV + Excel' },
     { label: 'Priority Support', value: true },
   ],
   team: [
-    { label: 'Property Lookups', value: 'Unlimited' },
-    { label: 'Skip Traces', value: '500/month' },
+    { label: 'Leads (unlimited counties)', value: 'Unlimited' },
+    { label: 'Skip Traces', value: 'Unlimited' },
     { label: 'Direct Mail', value: '2,000 pieces' },
     { label: 'Export Data', value: 'CSV + Excel + API' },
     { label: 'Priority Support', value: true },

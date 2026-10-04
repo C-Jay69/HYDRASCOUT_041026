@@ -1,6 +1,6 @@
-# 🏠 HYDRAWIRE — Automated Distressed Property Lead Generation & Outreach System
+# 🏠 HYDRASCOUT — Automated Distressed Property Lead Generation & Outreach System
 
-HYDRAWIRE turns the entire distressed-property workflow into **one button**. Press **Launch** and the platform automatically:
+HYDRASCOUT turns the entire distressed-property workflow into **one button**. Press **Launch** and the platform automatically:
 
 1. **Collects** property records from 21 registered government/public data-source connectors (tax assessor, recorder, sheriff sales, probate, bankruptcy, code enforcement, NOD/NTS, lis pendens, HUD, and more)
 2. **Classifies** every property across 17 distress categories (foreclosure, tax lien, probate, vacant, absentee, high equity, …)
@@ -34,8 +34,8 @@ Works **out of the box with zero configuration** (demo mode: in-memory data + si
 
 ```bash
 # 1. Clone & install (Node.js 18+; use --legacy-peer-deps for npm)
-git clone https://github.com/C-Jay69/HYDRAWIRE_050726.git
-cd HYDRAWIRE_050726
+git clone https://github.com/C-Jay69/HYDRASCOUT_041026.git
+cd HYDRASCOUT_041026
 npm install --legacy-peer-deps     # or: pnpm install / bun install
 
 # 2. (Optional) configure environment
@@ -70,11 +70,17 @@ All variables are **optional** — each unlocks a capability:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/publishable key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role key (server-side pipeline writes) |
 | `SENDGRID_API_KEY` + `SENDGRID_FROM_EMAIL` | Real email sending (otherwise simulated) |
+| `MAILGUN_API_KEY` + `MAILGUN_DOMAIN` + `MAILGUN_FROM_EMAIL` | Automatic email fallback when SendGrid isn't configured |
 | `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` + `TWILIO_FROM_NUMBER` | Real SMS sending (otherwise simulated) |
 | `OPENAI_API_KEY` (or `ANTHROPIC_API_KEY`) | LLM-written lead summaries & outreach copy (otherwise heuristic templates) |
 | `N8N_WEBHOOK_URL` | Calls your n8n/Make.com workflow during the Collect stage and ingests any `{ records: [...] }` it returns — this is how you plug in **real county scrapers** |
+| `ZAPIER_WEBHOOK_URL` / `MAKE_WEBHOOK_URL` / `N8N_CRM_WEBHOOK_URL` / `CRM_WEBHOOK_URL` | After every completed campaign, POSTs the lead list + stats to any of these — bridge to Airtable, Google Sheets, Notion, HubSpot, GoHighLevel or Salesforce from the receiving automation. See `/integrations` in the app. |
+| `COMPANY_NAME` / `COMPANY_PHONE` / `COMPANY_WEBSITE` | Used inside outreach templates (`{{company_name}}`, `{{company_phone}}`, `{{company_website}}`) |
+| `NEXT_PUBLIC_COMPANY_NAME` / `NEXT_PUBLIC_COMPANY_EMAIL` / `NEXT_PUBLIC_COMPANY_PHONE` | Shown on the public Contact page |
+| `NEXT_PUBLIC_APP_URL` | Public URL of this deployment (Stripe redirect URLs, template links) |
+| `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` | Real billing on `/billing` (otherwise demo mode — upgrades are simulated locally) |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Map view on the Search page |
-| `HYDRAWIRE_FORCE_DEMO=true` | Force in-memory demo mode even with Supabase configured |
+| `HYDRASCOUT_FORCE_DEMO=true` | Force in-memory demo mode even with Supabase configured |
 
 ### Seed demo properties into Supabase (optional)
 
@@ -126,7 +132,7 @@ Demo connectors synthesize realistic county records so you can exercise the full
 
 ### ⚖️ Compliance notes
 
-- **SMS & ringless voicemail** require prior express consent or another lawful basis in most jurisdictions (TCPA in the US). Without Twilio credentials, HYDRAWIRE simulates SMS — nothing is delivered. Built-in templates include opt-out language; keep it.
+- **SMS & ringless voicemail** require prior express consent or another lawful basis in most jurisdictions (TCPA in the US). Without Twilio credentials, HYDRASCOUT simulates SMS — nothing is delivered. Built-in templates include opt-out language; keep it.
 - Respect **DNC lists**, provider terms of service, and state-specific rules for contacting distressed homeowners (some states restrict solicitation of owners in foreclosure).
 - Enrichment must use **legally obtained data**. Every enrichment attempt is audit-logged (`enrichment_audits`) with provider, confidence, and rejection reasons.
 
