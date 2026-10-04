@@ -1,7 +1,9 @@
-// NOTE: these priceId values are placeholders. If you connect a real
-// STRIPE_SECRET_KEY, create matching recurring Prices in your Stripe
-// dashboard with these lookup keys (or swap in your own Price IDs) —
-// otherwise checkout automatically falls back to local demo mode.
+// NOTE: Basic/Team priceId values are placeholders — create matching
+// recurring Prices in your Stripe dashboard and set
+// NEXT_PUBLIC_STRIPE_PRICE_ID_BASIC / NEXT_PUBLIC_STRIPE_PRICE_ID_TEAM to
+// activate real checkout for those tiers. Pro defaults to the live price ID
+// from NEXT_PUBLIC_STRIPE_PRICE_ID_PRO when set. Without a matching real
+// Stripe Price, checkout automatically falls back to local demo mode.
 export const PLANS = {
   free: {
     name: 'Free',
@@ -17,7 +19,7 @@ export const PLANS = {
     lookups: 500,
     skipTraces: 25,
     mailPieces: 100,
-    priceId: 'price_basic_monthly',
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_BASIC || 'price_basic_monthly',
   },
   pro: {
     name: 'Pro',
@@ -25,7 +27,7 @@ export const PLANS = {
     lookups: 2000,
     skipTraces: 100,
     mailPieces: 500,
-    priceId: 'price_pro_monthly',
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_PRO || 'price_pro_monthly',
   },
   team: {
     name: 'Team',
@@ -33,9 +35,10 @@ export const PLANS = {
     lookups: Infinity,
     skipTraces: 500,
     mailPieces: 2000,
-    priceId: 'price_team_monthly',
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_TEAM || 'price_team_monthly',
   },
 } as const;
+
 
 export type PlanKey = keyof typeof PLANS;
 

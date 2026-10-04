@@ -219,6 +219,7 @@ export default function BillingPage() {
   const { subscription, upgradePlan, cancelSubscription, isLoading } =
     useSubscription();
   const [upgradeTarget, setUpgradeTarget] = useState<PlanKey | null>(null);
+  const [activeTab, setActiveTab] = useState('usage');
 
   const handleUpgrade = async () => {
     if (!upgradeTarget) return;
@@ -260,13 +261,13 @@ export default function BillingPage() {
                 Cancel Subscription
               </Button>
             )}
-            <Button>Change Plan</Button>
+            <Button onClick={() => setActiveTab('plans')}>Change Plan</Button>
           </div>
         </CardContent>
       </Card>
 
       {/* Tabs */}
-      <Tabs defaultValue="usage" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="usage">Usage & Plan</TabsTrigger>
           <TabsTrigger value="plans">Available Plans</TabsTrigger>
