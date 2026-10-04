@@ -56,8 +56,12 @@ export default function PropertyMap({
 }: PropertyMapProps) {
   const [openedProperty, setOpenedProperty] = useState<Property | null>(null);
 
-  // Use the API key from environment variables
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API || 'AIzaSyAWIxmH3uAvzCQKAF5jfCDLdJcnDoe4wjM';
+  // Use the API key from environment variables (NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is the
+  // documented name in .env.example; NEXT_PUBLIC_GOOGLE_MAPS_API kept for backwards compat).
+  const apiKey =
+    process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+    process.env.NEXT_PUBLIC_GOOGLE_MAPS_API ||
+    'AIzaSyAWIxmH3uAvzCQKAF5jfCDLdJcnDoe4wjM';
 
   return (
     <div className="relative w-full h-full">

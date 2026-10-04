@@ -146,10 +146,10 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
                   <a
-                    href={`mailto:${process.env.NEXT_PUBLIC_COMPANY_EMAIL || 'support@hydrascout.com'}`}
+                    href={`mailto:${process.env.NEXT_PUBLIC_COMPANY_EMAIL || 'support@hydrascout.online'}`}
                     className="text-gray-600 hover:text-[#1a56db] transition-colors"
                   >
-                    {process.env.NEXT_PUBLIC_COMPANY_EMAIL || 'support@hydrascout.com'}
+                    {process.env.NEXT_PUBLIC_COMPANY_EMAIL || 'support@hydrascout.online'}
                   </a>
                 </div>
               </div>

@@ -161,7 +161,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium capitalize">{displayName}</p>
                   <p className="text-xs text-muted-foreground">
-                    {email || "demo@hydrascout.com"}
+                    {email || "demo@hydrascout.online"}
                   </p>
                 </div>
               </DropdownMenuLabel>

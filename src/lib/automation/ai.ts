@@ -1,9 +1,16 @@
 /**
  * Step 12 — AI Features.
  *
- * Uses OpenAI (OPENAI_API_KEY) or Anthropic (ANTHROPIC_API_KEY) when
- * configured; otherwise falls back to deterministic heuristics/templates so
- * the pipeline never blocks on missing credentials.
+ * Tries a chain of LLM providers (first one configured wins), otherwise
+ * falls back to deterministic heuristics/templates so the pipeline never
+ * blocks on missing credentials:
+ *
+ *   1. OpenAI        (OPENAI_API_KEY)
+ *   2. Anthropic      (ANTHROPIC_API_KEY)
+ *   3. Google Gemini  (GEMINI_API_KEY)
+ *   4. OpenRouter     (OPENROUTER_API_KEY, OPENROUTER_MODEL) — OpenAI-compatible
+ *   5. NVIDIA NIM     (NVIDIA_NIM_KEY, NVIDIA_NIM_MODEL) — OpenAI-compatible
+ *   6. OpenCode Zen   (OPENCODE_ZEN_KEY, OPENCODE_ZEN_MODEL) — OpenAI-compatible
  *
  * Capabilities: property summary, motivation estimate, channel
  * recommendation, personalized message drafting, follow-up timing,
@@ -16,7 +23,65 @@ import { scoreLabel } from './score';
 const money = (n: number | null) => (n === null ? 'unknown' : `$${Math.round(n).toLocaleString()}`);
 
 export function aiConfigured(): boolean {
-  return Boolean(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY);
+  return Boolean(
+    process.env.OPENAI_API_KEY ||
+      process.env.ANTHROPIC_API_KEY ||
+      process.env.GEMINI_API_KEY ||
+      process.env.OPENROUTER_API_KEY ||
+      process.env.NVIDIA_NIM_KEY ||
+      process.env.OPENCODE_ZEN_KEY,
+  );
+}
+
+/** Generic helper for OpenAI-compatible chat-completions APIs (OpenRouter, NVIDIA NIM, OpenCode Zen, ...). */
+async function callOpenAICompatible(
+  baseUrl: string,
+  apiKey: string,
+  model: string,
+  prompt: string,
+  extraHeaders?: Record<string, string>,
+): Promise<string | null> {
+  try {
+    const res = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+        ...extraHeaders,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 300,
+        temperature: 0.6,
+      }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content?.trim() ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function callGemini(apiKey: string, model: string, prompt: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        signal: AbortSignal.timeout(20000),
+      },
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? null;
+  } catch {
+    return null;
+  }
 }
 
 async function callLLM(prompt: string): Promise<string | null> {
@@ -58,6 +123,41 @@ async function callLLM(prompt: string): Promise<string | null> {
       if (!res.ok) return null;
       const data = await res.json();
       return data.content?.[0]?.text?.trim() ?? null;
+    }
+    if (process.env.GEMINI_API_KEY) {
+      const result = await callGemini(process.env.GEMINI_API_KEY, process.env.GEMINI_MODEL || 'gemini-2.0-flash', prompt);
+      if (result) return result;
+    }
+    if (process.env.OPENROUTER_API_KEY) {
+      const result = await callOpenAICompatible(
+        'https://openrouter.ai/api/v1',
+        process.env.OPENROUTER_API_KEY,
+        process.env.OPENROUTER_MODEL || 'openrouter/auto',
+        prompt,
+        {
+          'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://hydrascout.online',
+          'X-Title': 'Hydrascout',
+        },
+      );
+      if (result) return result;
+    }
+    if (process.env.NVIDIA_NIM_KEY) {
+      const result = await callOpenAICompatible(
+        'https://integrate.api.nvidia.com/v1',
+        process.env.NVIDIA_NIM_KEY,
+        process.env.NVIDIA_NIM_MODEL || 'meta/llama-3.1-8b-instruct',
+        prompt,
+      );
+      if (result) return result;
+    }
+    if (process.env.OPENCODE_ZEN_KEY) {
+      const result = await callOpenAICompatible(
+        'https://opencode.ai/zen/v1',
+        process.env.OPENCODE_ZEN_KEY,
+        process.env.OPENCODE_ZEN_MODEL || 'big-pickle',
+        prompt,
+      );
+      if (result) return result;
     }
   } catch {
     // fall through to heuristic
@@ -160,7 +260,7 @@ export function renderTemplate(template: string, lead: Lead): string {
     motivation_score: String(lead.motivationScore),
     company_name: process.env.COMPANY_NAME || process.env.NEXT_PUBLIC_COMPANY_NAME || 'Hydrascout Home Solutions',
     company_phone: process.env.COMPANY_PHONE || process.env.NEXT_PUBLIC_COMPANY_PHONE || '(800) 555-0100',
-    company_website: process.env.COMPANY_WEBSITE || process.env.NEXT_PUBLIC_APP_URL || 'https://hydrascout.com',
+    company_website: process.env.COMPANY_WEBSITE || process.env.NEXT_PUBLIC_APP_URL || 'https://hydrascout.online',
   };
   return template.replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (_, key) => vars[key.toLowerCase()] ?? '');
 }
