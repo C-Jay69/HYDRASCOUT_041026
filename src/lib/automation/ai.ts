@@ -17,10 +17,32 @@
  * investor detection.
  */
 
+import { createHmac } from 'crypto';
 import { Lead, OutreachChannel, LEAD_CATEGORY_LABELS } from './types';
 import { scoreLabel } from './score';
 
 const money = (n: number | null) => (n === null ? 'unknown' : `$${Math.round(n).toLocaleString()}`);
+
+export const UNSUBSCRIBE_SECRET = () =>
+  process.env.UNSUBSCRIBE_SECRET || process.env.UNSUBSCRIBE_TOKEN_SECRET || 'hydrascout-unsubscribe-secret';
+
+/** HMAC-signed unsubscribe token — verified by /api/unsubscribe. */
+export function unsubscribeToken(leadId: string, email: string): string {
+  return createHmac('sha256', UNSUBSCRIBE_SECRET()).update(`${leadId}:${email.trim().toLowerCase()}`).digest('hex').slice(0, 32);
+}
+
+/** One-click unsubscribe URL embedded in outreach emails (CAN-SPAM). */
+export function unsubscribeUrl(lead: Lead): string {
+  const email = lead.emails[0]?.address;
+  if (!email) return '#';
+  const base = process.env.NEXT_PUBLIC_APP_URL || '';
+  const params = new URLSearchParams({
+    lead: lead.id,
+    email,
+    token: unsubscribeToken(lead.id, email),
+  });
+  return `${base}/api/unsubscribe?${params.toString()}`;
+}
 
 export function aiConfigured(): boolean {
   return Boolean(
@@ -261,6 +283,7 @@ export function renderTemplate(template: string, lead: Lead): string {
     company_name: process.env.COMPANY_NAME || process.env.NEXT_PUBLIC_COMPANY_NAME || 'Hydrascout Home Solutions',
     company_phone: process.env.COMPANY_PHONE || process.env.NEXT_PUBLIC_COMPANY_PHONE || '(800) 555-0100',
     company_website: process.env.COMPANY_WEBSITE || process.env.NEXT_PUBLIC_APP_URL || 'https://hydrascout.online',
+    unsubscribe_url: unsubscribeUrl(lead),
   };
   return template.replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (_, key) => vars[key.toLowerCase()] ?? '');
 }

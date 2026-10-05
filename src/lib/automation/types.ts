@@ -142,7 +142,7 @@ export interface Lead {
   aiSummary: string | null;
   recommendedChannel: OutreachChannel | null;
   sources: string[];
-  status: 'new' | 'contacted' | 'replied' | 'interested' | 'appointment' | 'converted' | 'dead';
+  status: LeadStatus;
   tags: string[];
   notes: string;
   followUpAt: string | null;
@@ -150,6 +150,23 @@ export interface Lead {
   createdAt: string;
   updatedAt: string;
 }
+
+/**
+ * CRM lead pipeline status. The disposition module extends the classic
+ * funnel with deal-stage statuses once a converted lead is worked through
+ * the buyer network: converted → under_contract → assigned → closed.
+ */
+export type LeadStatus =
+  | 'new'
+  | 'contacted'
+  | 'replied'
+  | 'interested'
+  | 'appointment'
+  | 'converted'
+  | 'under_contract'
+  | 'assigned'
+  | 'closed'
+  | 'dead';
 
 /** Step 8.8 — communication / delivery log */
 export interface Communication {
@@ -160,11 +177,103 @@ export interface Communication {
   channel: OutreachChannel;
   provider: string;
   simulated: boolean;
-  status: 'queued' | 'sent' | 'delivered' | 'failed' | 'replied' | 'task_created';
+  status: 'queued' | 'sent' | 'delivered' | 'failed' | 'replied' | 'task_created' | 'suppressed';
   subject?: string;
   message: string;
   cost: number;
   sentAt: string;
+}
+
+/* ------------------------------------------------------------------ */
+/* Disposition / buyer-matching module                                 */
+/* ------------------------------------------------------------------ */
+
+/** Financing preference of a buyer. */
+export type BuyerFinancing = 'cash' | 'financing' | 'either';
+
+/** A property buyer in the investor network with their buy-box criteria. */
+export interface Buyer {
+  id: string;
+  name: string;
+  company: string;
+  email: string;
+  phone: string;
+  /** Markets this buyer purchases in — state codes ("TX"), state names, "City, ST", counties, or "all". */
+  markets: string[];
+  /** Buy-box price range (offer target, compared against lead market value). */
+  minPrice: number | null;
+  maxPrice: number | null;
+  /** Property types the buyer purchases; empty = any. */
+  propertyTypes: string[];
+  financing: BuyerFinancing;
+  /** Minimum equity % the buyer wants to see in a deal. */
+  minEquityPercent: number | null;
+  /** Max rehab budget the buyer will take on (used for distressed/vacant stock). */
+  maxRehabBudget: number | null;
+  active: boolean;
+  notes: string;
+  dealsClosed: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Deal lifecycle: pitched → assigned → closed / fell_through. */
+export type DealStatus = 'pitched' | 'assigned' | 'closed' | 'fell_through';
+
+/** A deal connecting a converted lead with a buyer from the network. */
+export interface Deal {
+  id: string;
+  leadId: string;
+  buyerId: string | null;
+  status: DealStatus;
+  /** Match score of the (best) matched buyer at pitch time. */
+  matchScore: number | null;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+  assignedAt: string | null;
+  closedAt: string | null;
+}
+
+/** Ranked buyer ↔ lead match produced by the matching engine. */
+export interface BuyerMatch {
+  buyer: Buyer;
+  /** 0–100+ fit score. */
+  score: number;
+  /** Human-readable reasons explaining the score. */
+  reasons: string[];
+}
+
+/* ------------------------------------------------------------------ */
+/* TCPA / opt-out compliance module                                    */
+/* ------------------------------------------------------------------ */
+
+/** An entry on the Do-Not-Contact (suppression) list. */
+export interface SuppressionRecord {
+  id: string;
+  /** Normalized contact value — E.10-digit digits for phones, lowercased email for emails. */
+  value: string;
+  type: 'phone' | 'email';
+  /** Why the contact was suppressed (e.g. sms_stop, email_unsubscribe, manual). */
+  reason: string;
+  /** Where the suppression came from (twilio_webhook, unsubscribe_link, manual). */
+  source: string;
+  leadId: string | null;
+  note: string;
+  createdAt: string;
+}
+
+/** Consent audit log entry — every opt-out, opt-in and blocked send. */
+export interface ConsentEvent {
+  id: string;
+  leadId: string | null;
+  buyerId: string | null;
+  type: 'opt_out' | 'opt_in' | 'blocked_send' | 'help_request';
+  channel: string;
+  /** Phone/email value involved. */
+  value: string | null;
+  detail: string;
+  createdAt: string;
 }
 
 export interface FollowUp {
@@ -284,4 +393,10 @@ export interface DashboardStats {
   totalCost: number;
   runsCompleted: number;
   byCategory: Record<string, number>;
+  /** Disposition module — buyer network & deal funnel. */
+  activeBuyers: number;
+  dealsPitched: number;
+  dealsAssigned: number;
+  dealsClosed: number;
+  suppressedContacts: number;
 }

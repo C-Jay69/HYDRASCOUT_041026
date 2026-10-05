@@ -3,17 +3,18 @@ import { getStore } from '@/lib/automation/store';
 
 export const dynamic = 'force-dynamic';
 
-/** GET /api/leads/[id] — lead detail with communication history & follow-ups. */
+/** GET /api/leads/[id] — lead detail with communication history, follow-ups & deal. */
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const store = getStore();
   const lead = await store.getLead(id);
   if (!lead) return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
-  const [communications, followUps] = await Promise.all([
+  const [communications, followUps, deal] = await Promise.all([
     store.listCommunications(id),
     store.listFollowUps(id),
+    store.getDealByLead(id),
   ]);
-  return NextResponse.json({ lead, communications, followUps });
+  return NextResponse.json({ lead, communications, followUps, deal: deal ?? null });
 }
 
 /** PATCH /api/leads/[id] — update status, notes, tags, follow-up date. */

@@ -263,4 +263,60 @@ CREATE TABLE IF NOT EXISTS outreach_campaigns (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- 16. BUYERS (Disposition module — investor network with buy-box criteria)
+-- The full buyer object (buy-box, contact info, notes) lives in `data` (JSONB).
+CREATE TABLE IF NOT EXISTS buyers (
+    id TEXT PRIMARY KEY,
+    active BOOLEAN DEFAULT TRUE,
+    deals_closed INTEGER DEFAULT 0,
+    data JSONB NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_buyers_active ON buyers(active) WHERE active;
+
+-- 17. DEALS (Disposition module — lead ↔ buyer deal lifecycle)
+-- status: pitched → assigned → closed / fell_through
+CREATE TABLE IF NOT EXISTS deals (
+    id TEXT PRIMARY KEY,
+    lead_id TEXT REFERENCES leads(id) ON DELETE CASCADE,
+    buyer_id TEXT,
+    status TEXT DEFAULT 'pitched',         -- pitched, assigned, closed, fell_through
+    data JSONB NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_deals_lead ON deals(lead_id);
+CREATE INDEX IF NOT EXISTS idx_deals_buyer ON deals(buyer_id);
+CREATE INDEX IF NOT EXISTS idx_deals_status ON deals(status);
+
+-- 18. SUPPRESSIONS (TCPA / opt-out — Do-Not-Contact list)
+-- One row per suppressed phone (10-digit) or email (lowercased).
+-- sendOutreach() and notifyBuyer() hard-gate on this table before dispatch.
+CREATE TABLE IF NOT EXISTS suppressions (
+    id TEXT PRIMARY KEY,
+    value TEXT UNIQUE NOT NULL,            -- normalized phone digits or lowercased email
+    type TEXT NOT NULL,                    -- phone | email
+    reason TEXT,                           -- sms_stop, email_unsubscribe, manual, ...
+    source TEXT,                           -- twilio_webhook, unsubscribe_link, manual, ...
+    lead_id TEXT,
+    note TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_suppressions_type ON suppressions(type);
+
+-- 19. CONSENT EVENTS (TCPA audit log — every opt-out, opt-in & blocked send)
+CREATE TABLE IF NOT EXISTS consent_events (
+    id TEXT PRIMARY KEY,
+    lead_id TEXT,
+    buyer_id TEXT,
+    type TEXT NOT NULL,                    -- opt_out, opt_in, blocked_send, help_request
+    channel TEXT,                          -- email, sms, system, ...
+    value TEXT,                            -- phone/email involved
+    detail TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_consent_lead ON consent_events(lead_id);
+CREATE INDEX IF NOT EXISTS idx_consent_created ON consent_events(created_at DESC);
+
 CREATE TRIGGER update_leads_modtime BEFORE UPDATE ON leads FOR EACH ROW EXECUTE PROCEDURE update_modified_column();

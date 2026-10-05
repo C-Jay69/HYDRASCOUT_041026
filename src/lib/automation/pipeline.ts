@@ -230,6 +230,12 @@ export async function executePipeline(run: AutomationRun): Promise<void> {
       const comm = await sendOutreach(lead, channel, message, run.id, campaign.id);
       comms.push(comm);
 
+      if (comm.status === 'suppressed') {
+        // TCPA / opt-out gate blocked this send — do not contact, do not count
+        await ctx.log('warn', 'outreach', `${lead.propertyAddress}: send blocked — contact is on the Do-Not-Contact list.`);
+        continue;
+      }
+
       if (comm.status === 'failed') {
         campaign.stats.failed++;
         run.stats.outreachFailed++;
