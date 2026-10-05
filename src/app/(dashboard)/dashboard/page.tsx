@@ -26,6 +26,11 @@ import {
   Mail,
   ArrowRight,
   Loader2,
+  Handshake,
+  FileText,
+  UserCheck,
+  Trophy,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,6 +53,11 @@ interface Stats {
   costPerLead: number;
   totalCost: number;
   runsCompleted: number;
+  activeBuyers: number;
+  dealsPitched: number;
+  dealsAssigned: number;
+  dealsClosed: number;
+  suppressedContacts: number;
 }
 
 interface RunSummary {
@@ -121,6 +131,10 @@ export default function DashboardPage() {
     { title: "Appointments", value: fmt(stats.appointments), description: "Scheduled with sellers", icon: CalendarCheck, color: "bg-[#0ea5e9]" },
     { title: "Conversion Rate", value: `${stats.conversionRate}%`, description: "Interested / total leads", icon: Percent, color: "bg-[#f59e0b]" },
     { title: "Cost Per Lead", value: `$${stats.costPerLead.toFixed(2)}`, description: "Outreach spend / leads", icon: DollarSign, color: "bg-[#10b981]" },
+    { title: "Active Buyers", value: fmt(stats.activeBuyers), description: "Investors in your network", icon: Handshake, color: "bg-[#6366f1]" },
+    { title: "Deals Pitched", value: fmt(stats.dealsPitched), description: "Pitched to buyers", icon: FileText, color: "bg-[#8b5cf6]" },
+    { title: "Deals Assigned", value: fmt(stats.dealsAssigned), description: "Buyers working the deal", icon: UserCheck, color: "bg-[#0ea5e9]" },
+    { title: "Closed Deals", value: fmt(stats.dealsClosed), description: `${stats.suppressedContacts} contacts suppressed (DNC)`, icon: Trophy, color: "bg-[#059669]" },
   ];
 
   const categories = [
@@ -228,6 +242,8 @@ export default function DashboardPage() {
             {[
               { title: "Launch Automation", description: "Run the full pipeline with one click", icon: Rocket, color: "bg-[#1a56db]", href: "/automation/launch" },
               { title: "Lead CRM", description: "Search, filter and work your scored leads", icon: Users, color: "bg-[#f97316]", href: "/leads" },
+              { title: "Buyers", description: "Manage your investor network & buy boxes", icon: Handshake, color: "bg-[#6366f1]", href: "/buyers" },
+              { title: "Compliance", description: "Do-Not-Contact list & consent audit log", icon: ShieldCheck, color: "bg-[#ef4444]", href: "/compliance" },
               { title: "Campaigns", description: "Review outreach campaigns & results", icon: Mail, color: "bg-[#10b981]", href: "/campaigns" },
             ].map((action) => (
               <Link key={action.title} href={action.href} className="flex items-center gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors text-left w-full">

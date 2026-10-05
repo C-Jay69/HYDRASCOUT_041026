@@ -16,7 +16,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Loader2, Search, Download, Rocket, Phone, Mail, RefreshCw, Users } from 'lucide-react';
+import { Loader2, Search, Download, Rocket, Phone, Mail, RefreshCw, Users, Handshake, Trophy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -28,7 +29,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   hoa_lien: 'HOA Lien', other_motivated: 'Other',
 };
 
-const STATUSES = ['new', 'contacted', 'replied', 'interested', 'appointment', 'converted', 'dead'];
+const STATUSES = ['new', 'contacted', 'replied', 'interested', 'appointment', 'converted', 'under_contract', 'assigned', 'closed', 'dead'];
 
 const STATUS_COLOR: Record<string, string> = {
   new: 'bg-slate-500/15 text-slate-600',
@@ -37,6 +38,9 @@ const STATUS_COLOR: Record<string, string> = {
   interested: 'bg-orange-500/15 text-orange-600',
   appointment: 'bg-emerald-500/15 text-emerald-600',
   converted: 'bg-emerald-600/20 text-emerald-700',
+  under_contract: 'bg-amber-500/15 text-amber-600',
+  assigned: 'bg-indigo-500/15 text-indigo-600',
+  closed: 'bg-emerald-800/20 text-emerald-800',
   dead: 'bg-red-500/15 text-red-600',
 };
 
@@ -71,6 +75,23 @@ interface Lead {
 interface Comm { channel: string; provider: string; status: string; simulated: boolean; message: string; sentAt: string }
 interface FollowUp { dueAt: string; reason: string; done: boolean }
 
+interface BuyerLite {
+  id: string; name: string; company: string; email: string; phone: string;
+  markets: string[]; minPrice: number | null; maxPrice: number | null; financing: string; dealsClosed: number;
+}
+interface BuyerMatch { buyer: BuyerLite; score: number; reasons: string[] }
+interface Deal {
+  id: string; leadId: string; buyerId: string | null; status: string; matchScore: number | null;
+  notes: string; createdAt: string; updatedAt: string; assignedAt: string | null; closedAt: string | null;
+}
+
+const DEAL_STATUS_COLOR: Record<string, string> = {
+  pitched: 'bg-blue-500/15 text-blue-600',
+  assigned: 'bg-indigo-500/15 text-indigo-600',
+  closed: 'bg-emerald-600/20 text-emerald-700',
+  fell_through: 'bg-red-500/15 text-red-600',
+};
+
 function scoreColor(score: number) {
   if (score >= 80) return 'text-red-600 font-bold';
   if (score >= 60) return 'text-orange-500 font-bold';
@@ -79,6 +100,7 @@ function scoreColor(score: number) {
 }
 
 export default function LeadsPage() {
+  const { toast } = useToast();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -89,6 +111,13 @@ export default function LeadsPage() {
   const [selected, setSelected] = useState<Lead | null>(null);
   const [detail, setDetail] = useState<{ communications: Comm[]; followUps: FollowUp[] } | null>(null);
   const [notes, setNotes] = useState('');
+
+  // Disposition (buyer matching) state
+  const [matches, setMatches] = useState<BuyerMatch[] | null>(null);
+  const [deal, setDeal] = useState<Deal | null>(null);
+  const [matching, setMatching] = useState(false);
+  const [notifying, setNotifying] = useState(false);
+  const [dealing, setDealing] = useState(false);
 
   const fetchLeads = useCallback(async () => {
     setLoading(true);
@@ -116,9 +145,129 @@ export default function LeadsPage() {
     setSelected(lead);
     setNotes(lead.notes);
     setDetail(null);
+    setMatches(null);
+    setDeal(null);
     const res = await fetch(`/api/leads/${lead.id}`, { cache: 'no-store' });
     const data = await res.json();
     setDetail({ communications: data.communications || [], followUps: data.followUps || [] });
+    setDeal(data.deal || null);
+  };
+
+  /* -------- disposition handlers (buyer matching & deals) -------- */
+
+  const findMatches = async () => {
+    if (!selected) return;
+    setMatching(true);
+    try {
+      const res = await fetch(`/api/leads/${selected.id}/matches?top=5`, { cache: 'no-store' });
+      const data = await res.json();
+      setMatches(data.matches || []);
+    } finally {
+      setMatching(false);
+    }
+  };
+
+  const notifyTopMatches = async () => {
+    if (!selected || !matches?.length) return;
+    setNotifying(true);
+    try {
+      const res = await fetch(`/api/leads/${selected.id}/notify-buyers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ buyerIds: matches.slice(0, 3).map((m) => m.buyer.id) }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast({ title: 'Notify failed', description: data.error || 'Unknown error', variant: 'destructive' });
+        return;
+      }
+      if (data.notifiedCount > 0) {
+        toast({ title: `Notified ${data.notifiedCount} buyer${data.notifiedCount === 1 ? '' : 's'}`, description: 'Deal alerts sent — check the communication history below.' });
+      } else {
+        toast({ title: 'All notifications blocked', description: 'This contact is on the Do-Not-Contact list (compliance gate).', variant: 'destructive' });
+      }
+      // Refresh detail (comms + deal) and ensure a deal record exists
+      const detailRes = await fetch(`/api/leads/${selected.id}`, { cache: 'no-store' });
+      const detailData = await detailRes.json();
+      setDetail({ communications: detailData.communications || [], followUps: detailData.followUps || [] });
+      setDeal(detailData.deal || null);
+      const leadRes = await fetch(`/api/leads/${selected.id}`, { cache: 'no-store' });
+      const leadData = await leadRes.json();
+      if (leadData.lead) {
+        setLeads((prev) => prev.map((l) => (l.id === selected.id ? { ...l, ...leadData.lead } : l)));
+        setSelected({ ...selected, ...leadData.lead });
+      }
+    } finally {
+      setNotifying(false);
+    }
+  };
+
+  const pitchToBuyer = async (match: BuyerMatch, assign = false) => {
+    if (!selected) return;
+    setDealing(true);
+    try {
+      const res = await fetch('/api/deals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadId: selected.id, buyerId: match.buyer.id, matchScore: match.score }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast({ title: 'Could not create deal', description: data.error || 'Unknown error', variant: 'destructive' });
+        return;
+      }
+      let current = data.deal as Deal;
+      if (assign) {
+        const patchRes = await fetch(`/api/deals/${current.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'assigned', buyerId: match.buyer.id }),
+        });
+        const patchData = await patchRes.json();
+        if (!patchRes.ok) {
+          toast({ title: 'Could not assign deal', description: patchData.error || 'Unknown error', variant: 'destructive' });
+          return;
+        }
+        current = patchData.deal;
+        toast({ title: 'Deal assigned', description: `${match.buyer.name} is now working ${selected.propertyAddress}.` });
+      } else {
+        toast({ title: 'Deal pitched', description: `Pitched to ${match.buyer.name} (score ${match.score}).` });
+      }
+      setDeal(current);
+      setLeads((prev) => prev.map((l) => (l.id === selected.id ? { ...l, status: assign ? 'assigned' : 'converted' } : l)));
+      setSelected({ ...selected, status: assign ? 'assigned' : 'converted' });
+    } finally {
+      setDealing(false);
+    }
+  };
+
+  const updateDeal = async (status: 'closed' | 'fell_through') => {
+    if (!selected || !deal) return;
+    setDealing(true);
+    try {
+      const res = await fetch(`/api/deals/${deal.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast({ title: 'Could not update deal', description: data.error || 'Unknown error', variant: 'destructive' });
+        return;
+      }
+      setDeal(data.deal);
+      const leadStatus = data.leadStatus as string;
+      setLeads((prev) => prev.map((l) => (l.id === selected.id ? { ...l, status: leadStatus } : l)));
+      setSelected({ ...selected, status: leadStatus });
+      toast({
+        title: status === 'closed' ? 'Deal closed 🎉' : 'Deal fell through',
+        description: status === 'closed'
+          ? `Lead marked closed — buyer's closed-deal count updated.`
+          : 'Lead returned to the active pipeline.',
+      });
+    } finally {
+      setDealing(false);
+    }
   };
 
   const patchLead = async (id: string, patch: Record<string, unknown>) => {
@@ -318,6 +467,88 @@ export default function LeadsPage() {
                     ))}
                     {!selected.phones.length && !selected.emails.length && <p className="text-muted-foreground text-sm">No enriched contact info (low confidence match rejected).</p>}
                   </div>
+                </div>
+
+                {/* Disposition — buyer matching & deal lifecycle */}
+                <div className="p-3 rounded-lg border">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                      <Handshake className="h-3.5 w-3.5" /> DISPOSITION
+                    </p>
+                    {deal && (
+                      <Badge className={`text-[10px] ${DEAL_STATUS_COLOR[deal.status] || ''}`}>{deal.status.replace('_', ' ')}</Badge>
+                    )}
+                  </div>
+
+                  {deal ? (
+                    <div className="space-y-2 text-sm">
+                      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                        <span>Deal created {new Date(deal.createdAt).toLocaleDateString()}</span>
+                        {deal.assignedAt && <span>· assigned {new Date(deal.assignedAt).toLocaleDateString()}</span>}
+                        {deal.closedAt && <span>· closed {new Date(deal.closedAt).toLocaleDateString()}</span>}
+                        {deal.matchScore !== null && <span>· match score {deal.matchScore}</span>}
+                      </div>
+                      {deal.status !== 'closed' && deal.status !== 'fell_through' && (
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          <Button size="sm" disabled={dealing} onClick={() => updateDeal('closed')}>
+                            <Trophy className="h-3.5 w-3.5 mr-1" /> Mark Closed
+                          </Button>
+                          <Button size="sm" variant="outline" className="text-red-600" disabled={dealing} onClick={() => updateDeal('fell_through')}>
+                            Fell Through
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <Button size="sm" variant={matches ? 'outline' : 'default'} disabled={matching} onClick={findMatches}>
+                      {matching ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Handshake className="h-3.5 w-3.5 mr-1" />}
+                      {matches ? 'Refresh Matches' : 'Find Matching Buyers'}
+                    </Button>
+                    {matches && matches.length > 0 && (
+                      <Button size="sm" variant="secondary" disabled={notifying} onClick={notifyTopMatches}>
+                        {notifying ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Mail className="h-3.5 w-3.5 mr-1" />}
+                        Notify Top Matches
+                      </Button>
+                    )}
+                  </div>
+
+                  {matches && (
+                    <div className="mt-3 space-y-2">
+                      {matches.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">No active buyers match this lead. Add buyers with matching buy-box criteria.</p>
+                      ) : matches.map((m) => (
+                        <div key={m.buyer.id} className="p-2.5 rounded-md bg-muted/40 border border-border/50">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold tabular-nums text-primary">{m.score}</span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium truncate">{m.buyer.name}{m.buyer.company ? ` · ${m.buyer.company}` : ''}</p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {m.buyer.markets.length ? m.buyer.markets.join(', ') : 'nationwide'}
+                                {(m.buyer.minPrice !== null || m.buyer.maxPrice !== null) &&
+                                  ` · $${(m.buyer.minPrice ?? 0).toLocaleString()}–$${(m.buyer.maxPrice ?? 0).toLocaleString()}`}
+                                {` · ${m.buyer.financing}`}
+                              </p>
+                            </div>
+                            <Button size="sm" variant="outline" disabled={dealing} onClick={() => pitchToBuyer(m)}>
+                              Pitch
+                            </Button>
+                            {deal?.buyerId === m.buyer.id && deal?.status === 'pitched' && (
+                              <Button size="sm" disabled={dealing} onClick={() => pitchToBuyer(m, true)}>Assign</Button>
+                            )}
+                          </div>
+                          {m.reasons.length > 0 && (
+                            <ul className="mt-1.5 space-y-0.5">
+                              {m.reasons.slice(0, 4).map((r, i) => (
+                                <li key={i} className="text-xs text-muted-foreground">• {r}</li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>

@@ -19,7 +19,8 @@ Would a quick 10-minute call this week work for you?
 Best regards,
 Alex
 Hydrascout Home Solutions
-Reply STOP to be removed from our list.`,
+
+Prefer not to receive these emails? Unsubscribe instantly here: {{unsubscribe_url}}`,
 
   sms: `Hi {{owner_first_name}}, this is Alex w/ Hydrascout Home Solutions. Quick question about your property at {{property_address}} — would you consider a fair cash offer, as-is, no fees? Reply YES for details or STOP to opt out.`,
 

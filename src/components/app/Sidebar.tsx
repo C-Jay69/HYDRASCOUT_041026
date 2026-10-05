@@ -16,6 +16,8 @@ import {
   Rocket,
   Users,
   UserSearch,
+  Handshake,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -37,6 +39,8 @@ const navItems: NavItem[] = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "Launch Automation", href: "/automation/launch", icon: Rocket },
   { title: "Lead CRM", href: "/leads", icon: Users },
+  { title: "Buyers", href: "/buyers", icon: Handshake },
+  { title: "Compliance", href: "/compliance", icon: ShieldCheck },
   { title: "Property Search", href: "/search", icon: Map },
   { title: "Skip Trace", href: "/skip-trace", icon: UserSearch },
   { title: "Lead Lists", href: "/lists", icon: List },
